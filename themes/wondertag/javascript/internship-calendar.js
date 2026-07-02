@@ -1,63 +1,93 @@
-
-function showMessage(message, type) {
-    //display application messages
+/** 
+ * @returns {boolean}
+ */
+function confirmDelete() {
+    return window.confirm('Delete this event? This cannot be undone.'); //confirms delete
 }
 
+function dismissFlashMessage() {
+    const flash = document.querySelector('.flash');
+
+    if (!flash) {
+        return;
+    }
+
+    setTimeout(() => {
+
+        flash.style.transition = 'opacity 0.4s ease';
+        flash.style.opacity = '0';
+
+        setTimeout(() => {
+            flash.remove();
+        }, 400);
+
+    }, 4000);
+} // automatically dismisses a flash message
+
+/**
+ *
+ * @param {string} action
+ * @param {Object} data
+ * @returns {Promise<Object>}
+ */
 async function sendRequest(action, data = {}) {
-    // send AJAX request
+
+    try {
+
+        const formData = new FormData();
+
+        // Add the action
+        formData.append('action', action);
+
+        // Add any additional request data
+        Object.entries(data).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+
+        const response = await fetch(
+            'layout/internship_calendar/xhr/internship_calendar.php',
+            {
+                method: 'POST',
+                body: formData
+            }
+        );
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error('AJAX Error:', error);
+
+        return {
+            success: false,
+            message: 'An unexpected error occurred.',
+            data: null
+        };
+
+    }
+
 }
 
-async function saveEvent(data) {
-    // save events
-}
-
-async function updateEvent(data) {
-    // update event
-}
-
-async function deleteEvent(id) {
-    // delete events
-}
-
-async function searchEvents(query) {
-    // search for events
-}
-
-async function filterEvents(filters) {
-    // filter for events
-}
-
-async function toggleCompletion(id) {
-    //toggle completion
-}
+// Event Listeners
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Register listeners here.
+    // Register delete confirmation on all delete links
+    const deleteLinks = document.querySelectorAll('.js-confirm-delete');
 
-});
+    deleteLinks.forEach(link => {
 
-// Tribbbal Internship Calendar — client-side interactivity
+        link.addEventListener('click', event => {
 
-/*document.addEventListener('DOMContentLoaded', function () {
-    // Confirm before any delete link fires (delete-event.php does the real work server-side)
-    var deleteLinks = document.querySelectorAll('.js-confirm-delete');
-    deleteLinks.forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            var ok = window.confirm('Delete this event? This cannot be undone.');
-            if (!ok) {
-                e.preventDefault();
+            if (!confirmDelete()) {
+                event.preventDefault();
             }
+
         });
+
     });
 
-    // Auto-dismiss flash messages after a few seconds
-    var flash = document.querySelector('.flash');
-    if (flash) {
-        setTimeout(function () {
-            flash.style.transition = 'opacity 0.4s ease';
-            flash.style.opacity = '0';
-            setTimeout(function () { flash.remove(); }, 400);
-        }, 4000);
-    }
-});*/
+    // Automatically hide flash messages
+    dismissFlashMessage();
+
+});
