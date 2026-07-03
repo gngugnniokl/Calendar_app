@@ -1,0 +1,24 @@
+<?php
+// content.phtml
+// Acts as the main page layout for the timeline.
+// Expected variables: $week, $days, $min_week, $max_week
+$hero_title = "Week " . intval($week);
+$hero_eyebrow = "Timeline";
+$show_week_nav = true;
+include __DIR__ . '/includes/hero.phtml';
+?>
+
+<?php if (empty($days)): ?>
+    <?php
+    $empty_message = "No events logged for week " . intval($week) . " yet.";
+    $empty_link = "add-event.php";
+    $empty_link_text = "Add an event";
+    include __DIR__ . '/includes/empty-state.phtml';
+    ?>
+<?php else: ?>
+<div class="timeline">
+    <?php foreach ($days as $d): ?>
+        <?php include __DIR__ . '/includes/event-card.phtml'; ?>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
