@@ -4,7 +4,7 @@
 $e = $e ?? [];
 ?>
 <li>
-    <a href="event.php?id=<?php echo intval($e['id']); ?>">
+    <a href="?link1=internship_calendar_event&id=<?php echo intval($e['id']); ?>">
         <span class="week-tab-sm">W<?php echo sprintf('%02d', $e['week']); ?></span>
         <span><?php echo clean($e['title']); ?></span>
         <time><?php echo format_date($e['event_date'], 'M j'); ?></time>

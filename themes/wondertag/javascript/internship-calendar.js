@@ -145,7 +145,9 @@
     function openModal() {
         const modal = document.getElementById('event-modal');
         if (modal) {
-            modal.style.display = 'block'; 
+            modal.style.display = 'flex';
+            // slight delay to allow display to apply before opacity transition
+            setTimeout(() => modal.classList.add('show'), 10);
         }
     }
 
@@ -155,7 +157,8 @@
     function closeModal() {
         const modal = document.getElementById('event-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('show');
+            setTimeout(() => { modal.style.display = 'none'; }, 250);
         }
     }
 
@@ -163,7 +166,7 @@
      * Clears the modal form for creating a new event.
      */
     function clearForm() {
-        const form = document.getElementById('event-form');
+        const form = document.getElementById('event-modal-form');
         if (form) {
             form.reset();
             const idInput = form.querySelector('[name="id"]');
@@ -183,7 +186,7 @@
      * @param {Object} data 
      */
     function populateForm(data) {
-        const form = document.getElementById('event-form');
+        const form = document.getElementById('event-modal-form');
         if (form) {
             Object.keys(data).forEach(key => {
                 const input = form.querySelector(`[name="${key}"]`);
@@ -256,45 +259,49 @@
 
         // Toggle Completion Flow
         document.addEventListener('change', async (e) => {
-            if (e.target.matches('.js-toggle-completion')) {
-                const id = e.target.dataset.id;
+            const toggle = e.target.closest('.js-toggle-completion');
+            if (toggle) {
+                const id = toggle.dataset.id;
                 
                 // Optimistic UI could be done here, but let's wait for server
-                setLoading(e.target, true);
+                setLoading(toggle, true);
                 
                 const result = await toggleCompletion(id);
                 
-                setLoading(e.target, false);
+                setLoading(toggle, false);
                 
                 if (result.success) {
                     showMessage(result.message);
-                    e.target.checked = result.data.completed == 1;
+                    toggle.checked = result.data.completed == 1;
                 } else {
                     showMessage(result.message, 'error');
-                    e.target.checked = !e.target.checked; // Revert visually
+                    toggle.checked = !toggle.checked; // Revert visually
                 }
             }
         });
 
         // Delete Flow
         document.addEventListener('click', async (e) => {
-            if (e.target.matches('.js-confirm-delete')) {
+            const deleteBtn = e.target.closest('.js-confirm-delete');
+            if (deleteBtn) {
                 e.preventDefault();
                 
                 if (window.confirm('Delete this event? This cannot be undone.')) {
-                    const id = e.target.dataset.id;
-                    setLoading(e.target, true);
+                    const id = deleteBtn.dataset.id;
+                    setLoading(deleteBtn, true);
                     
                     const result = await deleteEvent(id);
                     
                     if (result.success) {
                         showMessage(result.message);
-                        const row = e.target.closest('.event-row');
+                        const row = deleteBtn.closest('.event-row, li, .event-detail, .timeline-item');
                         if (row) {
                             row.remove();
+                        } else {
+                            window.location.reload();
                         }
                     } else {
-                        setLoading(e.target, false);
+                        setLoading(deleteBtn, false);
                         showMessage(result.message, 'error');
                     }
                 }
@@ -303,25 +310,31 @@
 
         // Modal triggers
         document.addEventListener('click', (e) => {
-            if (e.target.matches('.js-open-create-modal')) {
+            const createBtn = e.target.closest('.js-open-create-modal');
+            if (createBtn) {
+                e.preventDefault();
                 clearForm();
                 openModal();
             }
             
-            if (e.target.matches('.js-open-edit-modal')) {
+            const editBtn = e.target.closest('.js-open-edit-modal');
+            if (editBtn) {
+                e.preventDefault();
                 // Assuming data is passed as data-attributes on the button
-                const data = Object.assign({}, e.target.dataset);
+                const data = Object.assign({}, editBtn.dataset);
                 populateForm(data);
                 openModal();
             }
             
-            if (e.target.matches('.js-close-modal')) {
+            const closeBtn = e.target.closest('.js-close-modal');
+            if (closeBtn) {
+                e.preventDefault();
                 closeModal();
             }
         });
 
         // Form Submission Flow
-        const eventForm = document.getElementById('event-form');
+        const eventForm = document.getElementById('event-modal-form');
         if (eventForm) {
             eventForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -344,6 +357,7 @@
                 if (result.success) {
                     showMessage(result.message);
                     closeModal();
+                    window.location.reload();
                 } else {
                     showMessage(result.message, 'error');
                 }

@@ -19,10 +19,10 @@ $hero_class = ($hero_title === 'Dashboard') ? 'page-intro' : 'page-intro page-in
     <?php if (isset($show_week_nav) && $show_week_nav): ?>
         <nav class="week-nav" aria-label="Week navigation">
             <?php if ($week > $min_week): ?>
-                <a href="calendar.php?week=<?php echo $week - 1; ?>" class="btn btn-ghost">&larr; Prev</a>
+                <a href="?link1=internship_calendar&week=<?php echo $week - 1; ?>" class="btn btn-ghost">&larr; Prev</a>
             <?php endif; ?>
             <?php if ($week < $max_week): ?>
-                <a href="calendar.php?week=<?php echo $week + 1; ?>" class="btn btn-ghost">Next &rarr;</a>
+                <a href="?link1=internship_calendar&week=<?php echo $week + 1; ?>" class="btn btn-ghost">Next &rarr;</a>
             <?php endif; ?>
         </nav>
     <?php endif; ?>

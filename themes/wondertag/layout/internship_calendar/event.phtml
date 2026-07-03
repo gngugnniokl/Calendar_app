@@ -56,9 +56,9 @@
     </main>
 
     <footer class="event-actions">
-        <a href="edit-event.php?id=<?php echo intval($event['id']); ?>" class="btn btn-ghost">Edit</a>
-        <a href="delete-event.php?id=<?php echo intval($event['id']); ?>" class="btn btn-danger js-confirm-delete">Delete</a>
-        <a href="calendar.php?week=<?php echo intval($event['week']); ?>" class="btn btn-ghost">&larr; Back to Week <?php echo intval($event['week']); ?></a>
+        <a href="#" class="btn btn-ghost js-open-edit-modal" data-id="<?php echo intval($event['id']); ?>" data-title="<?php echo clean($event['title']); ?>" data-event_date="<?php echo clean($event['event_date']); ?>" data-week="<?php echo intval($event['week']); ?>" data-day="<?php echo clean($event['day']); ?>" data-description="<?php echo clean($event['description'] ?? ''); ?>" data-success_criteria="<?php echo clean($event['success_criteria'] ?? ''); ?>" data-traps="<?php echo clean($event['traps'] ?? ''); ?>">Edit</a>
+        <a href="#" class="btn btn-danger js-confirm-delete" data-id="<?php echo intval($event['id']); ?>">Delete</a>
+        <a href="?link1=internship_calendar&week=<?php echo intval($event['week']); ?>" class="btn btn-ghost">&larr; Back to Week <?php echo intval($event['week']); ?></a>
     </footer>
 </article>
 

@@ -23,11 +23,11 @@ include __DIR__ . '/includes/hero.phtml';
 <section class="dashboard-split">
     <div class="dashboard-col">
         <h2>Recently Completed</h2>
-        <?php if (empty($completed)): ?>
+        <?php if (empty($recent_completed)): ?>
             <p class="dim-note">Nothing logged as completed yet.</p>
         <?php else: ?>
             <ul class="mini-list">
-                <?php foreach (array_slice(array_reverse($completed), 0, 5) as $e): ?>
+                <?php foreach ($recent_completed as $e): ?>
                     <?php include __DIR__ . '/includes/event-row.phtml'; ?>
                 <?php endforeach; ?>
             </ul>
@@ -36,11 +36,11 @@ include __DIR__ . '/includes/hero.phtml';
 
     <div class="dashboard-col">
         <h2>Up Next</h2>
-        <?php if (empty($upcoming)): ?>
+        <?php if (empty($up_next)): ?>
             <p class="dim-note">No upcoming events on the calendar.</p>
         <?php else: ?>
             <ul class="mini-list">
-                <?php foreach (array_slice($upcoming, 0, 5) as $e): ?>
+                <?php foreach ($up_next as $e): ?>
                     <?php include __DIR__ . '/includes/event-row.phtml'; ?>
                 <?php endforeach; ?>
             </ul>
