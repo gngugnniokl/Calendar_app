@@ -12,40 +12,54 @@
     ?>
 <?php else: ?>
 
-<article class="event-detail">
-    <div class="event-detail-header">
-        <span class="week-tab"><?php echo clean($event['day']); ?> &middot; Week <?php echo intval($event['week']); ?></span>
-        <time><?php echo format_date($event['event_date'], 'l, F j, Y'); ?></time>
-    </div>
+<article class="event-detail" data-event-id="<?php echo intval($event['id']); ?>">
+    <header class="event-detail-header">
+        <div class="event-detail-meta">
+            <span class="week-tab"><?php echo clean($event['day']); ?> &middot; Week <?php echo intval($event['week']); ?></span>
+            <time datetime="<?php echo clean($event['event_date']); ?>"><?php echo format_date($event['event_date'], 'l, F j, Y'); ?></time>
+        </div>
 
-    <h1><?php echo clean($event['title']); ?></h1>
+        <div class="event-completion-toggle">
+            <label class="checkbox-label" for="event-complete-<?php echo intval($event['id']); ?>">
+                <input id="event-complete-<?php echo intval($event['id']); ?>" type="checkbox" class="js-event-completion-toggle" data-event-id="<?php echo intval($event['id']); ?>" <?php echo !empty($event['completed']) ? 'checked' : ''; ?>>
+                Completed
+            </label>
+            <button type="button" class="btn btn-secondary js-event-completion-toggle-btn" data-event-id="<?php echo intval($event['id']); ?>">
+                <?php echo !empty($event['completed']) ? 'Mark Incomplete' : 'Mark Complete'; ?>
+            </button>
+        </div>
+    </header>
 
-    <?php if (!empty($event['description'])): ?>
-    <section class="event-block">
-        <h2>Description</h2>
-        <p><?php echo nl2br(clean($event['description'])); ?></p>
-    </section>
-    <?php endif; ?>
+    <main class="event-detail-main">
+        <h1><?php echo clean($event['title']); ?></h1>
 
-    <?php if (!empty($event['success_criteria'])): ?>
-    <section class="event-block event-block-success">
-        <h2>Success Criteria</h2>
-        <p><?php echo nl2br(clean($event['success_criteria'])); ?></p>
-    </section>
-    <?php endif; ?>
+        <?php if (!empty($event['description'])): ?>
+        <section class="event-block">
+            <h2>Description</h2>
+            <p><?php echo nl2br(clean($event['description'])); ?></p>
+        </section>
+        <?php endif; ?>
 
-    <?php if (!empty($event['traps'])): ?>
-    <section class="event-block event-block-caution">
-        <h2>Watch Outs / Traps</h2>
-        <p><?php echo nl2br(clean($event['traps'])); ?></p>
-    </section>
-    <?php endif; ?>
+        <?php if (!empty($event['success_criteria'])): ?>
+        <section class="event-block event-block-success">
+            <h2>Success Criteria</h2>
+            <p><?php echo nl2br(clean($event['success_criteria'])); ?></p>
+        </section>
+        <?php endif; ?>
 
-    <div class="event-actions">
+        <?php if (!empty($event['traps'])): ?>
+        <section class="event-block event-block-caution">
+            <h2>Watch Outs / Traps</h2>
+            <p><?php echo nl2br(clean($event['traps'])); ?></p>
+        </section>
+        <?php endif; ?>
+    </main>
+
+    <footer class="event-actions">
         <a href="edit-event.php?id=<?php echo intval($event['id']); ?>" class="btn btn-ghost">Edit</a>
         <a href="delete-event.php?id=<?php echo intval($event['id']); ?>" class="btn btn-danger js-confirm-delete">Delete</a>
         <a href="calendar.php?week=<?php echo intval($event['week']); ?>" class="btn btn-ghost">&larr; Back to Week <?php echo intval($event['week']); ?></a>
-    </div>
+    </footer>
 </article>
 
 <?php endif; ?>

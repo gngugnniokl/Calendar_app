@@ -16,9 +16,10 @@ include __DIR__ . '/includes/hero.phtml';
     include __DIR__ . '/includes/empty-state.phtml';
     ?>
 <?php else: ?>
-<div class="timeline">
-    <?php foreach ($days as $d): ?>
-        <?php include __DIR__ . '/includes/event-card.phtml'; ?>
-    <?php endforeach; ?>
-</div>
+    <?php include __DIR__ . '/includes/filters.phtml'; ?>
+    <div class="timeline">
+        <?php foreach ($days as $d): ?>
+            <?php include __DIR__ . '/includes/event-card.phtml'; ?>
+        <?php endforeach; ?>
+    </div>
 <?php endif; ?>
