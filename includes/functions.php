@@ -103,3 +103,116 @@ function get_flash_message() {
     }
     return null;
 }
+function Wo_GetCurrentInternshipWeek($conn) {
+    return get_current_week($conn); // keep your existing logic, just relocated here
+}
+
+function Wo_GetInternshipCalendarEventsByWeek($conn, $week) {
+    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE week = ? ORDER BY event_date ASC");
+    mysqli_stmt_bind_param($stmt, "i", $week);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $days = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $days[] = $row;
+    }
+    return $days;
+}
+
+function Wo_GetInternshipCalendarWeekBounds($conn) {
+    $range = mysqli_query($conn, "SELECT MIN(week) AS min_week, MAX(week) AS max_week FROM calendar_events");
+    $bounds = mysqli_fetch_assoc($range);
+    return [
+        'min' => intval($bounds['min_week'] ?? 1),
+        'max' => intval($bounds['max_week'] ?? 1),
+    ];
+}
+
+function Wo_GetInternshipCalendarEvents($conn, $filters = []) {
+    $week   = isset($filters['week']) ? intval($filters['week']) : null;
+    $search = isset($filters['search']) ? trim($filters['search']) : '';
+
+    $sql    = "SELECT * FROM calendar_events WHERE 1=1";
+    $types  = "";
+    $params = [];
+
+    if (!empty($week)) {
+        $sql .= " AND week = ?";
+        $types .= "i";
+        $params[] = $week;
+    }
+
+    if ($search !== '') {
+        $sql .= " AND title LIKE ?";
+        $types .= "s";
+        $params[] = "%" . $search . "%";
+    }
+
+    $sql .= " ORDER BY event_date ASC";
+
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if (!empty($types)) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $events = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $events[] = $row;
+    }
+    return $events;
+}
+function Wo_GetInternshipCalendarStats($conn) {
+    $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
+    $result = mysqli_query($conn, $sql);
+
+    $events = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $events[] = $row;
+        }
+    }
+
+    $today = date('Y-m-d');
+
+    $week_numbers = array_unique(array_map(function ($e) { return intval($e['week']); }, $events));
+    $unique_dates = array_unique(array_map(function ($e) { return $e['event_date']; }, $events));
+
+    $completed = array_filter($events, function ($e) use ($today) {
+        return $e['event_date'] < $today;
+    });
+    $upcoming = array_filter($events, function ($e) use ($today) {
+        return $e['event_date'] >= $today;
+    });
+
+    $current_week   = get_current_week($conn);
+    $program_length = 8;
+    $progress_pct   = $program_length > 0
+        ? min(100, round(($current_week / $program_length) * 100))
+        : 0;
+
+    return [
+        'events'           => $events,
+        'total_weeks'      => count($week_numbers),
+        'total_days'       => count($unique_dates),
+        'total_events'     => count($events),
+        'current_week'     => $current_week,
+        'completed'        => array_values($completed),
+        'upcoming'         => array_values($upcoming),
+        'completed_count'  => count($completed),
+        'upcoming_count'   => count($upcoming),
+        'program_length'   => $program_length,
+        'progress_pct'     => $progress_pct,
+    ];
+}
+
+function Wo_GetInternshipCalendarEventById($conn, $id) {
+    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "i", $id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    return mysqli_fetch_assoc($result) ?: null;
+}
