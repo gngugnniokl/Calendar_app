@@ -88,9 +88,19 @@ switch ($action) {
         break;
 
     case 'search_events':
-        // - Read search term.
-        // - Search events.
-        // - Return events that match
+
+        $data = getRequestData();
+
+        $events = Wo_GetInternshipCalendarEvents($conn, [
+            'search' => $data['query']
+        ]);
+
+        respond(
+            true,
+            'Search completed.',
+            $events
+        );
+
         break;
 
     case 'filter_events':
