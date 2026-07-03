@@ -11,8 +11,9 @@ include __DIR__ . '/includes/hero.phtml';
 <?php if (empty($days)): ?>
     <?php
     $empty_message = "No events logged for week " . intval($week) . " yet.";
-    $empty_link = "add-event.php";
+    $empty_link = "#";
     $empty_link_text = "Add an event";
+    $empty_link_class = "js-open-create-modal";
     include __DIR__ . '/includes/empty-state.phtml';
     ?>
 <?php else: ?>

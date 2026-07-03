@@ -5,8 +5,8 @@ ALTER TABLE calendar_events
 ADD completed TINYINT(1) NOT NULL DEFAULT 0;
 */
 
-require_once '../../../config/database.php';
-require_once '../../../includes/functions.php';
+require_once '../config/database.php';
+require_once '../includes/functions.php';
 header('Content-Type: application/json');
 
 function respond($success, $message = '', $data = null)

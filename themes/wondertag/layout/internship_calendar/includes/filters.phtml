@@ -1,18 +1,19 @@
 <?php
 // filters.phtml
 // Reusable search, filter, and sort controls.
-$searchQuery = isset($_GET['q']) ? clean($_GET['q']) : '';
+$searchQuery = isset($_GET['search']) ? clean($_GET['search']) : (isset($_GET['q']) ? clean($_GET['q']) : '');
 $filterWeek = isset($_GET['week']) ? intval($_GET['week']) : '';
 $filterDay = isset($_GET['day']) ? clean($_GET['day']) : '';
 $filterFrom = isset($_GET['from']) ? clean($_GET['from']) : '';
 $filterTo = isset($_GET['to']) ? clean($_GET['to']) : '';
-$days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+$dayOptions = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 ?>
 <form class="search-form" method="GET" action="" id="event-filters-form">
+    <input type="hidden" name="link1" value="internship_calendar">
     <div class="filter-row">
         <div class="filter-group">
             <label for="filter-search">Search</label>
-            <input id="filter-search" type="text" name="q" placeholder="Search events..." class="js-search-input" value="<?php echo $searchQuery; ?>">
+            <input id="filter-search" type="text" name="search" placeholder="Search events..." class="js-search-input" value="<?php echo $searchQuery; ?>">
         </div>
 
         <div class="filter-group">
@@ -29,7 +30,7 @@ $days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
             <label for="filter-day">Day</label>
             <select id="filter-day" name="day">
                 <option value="">All days</option>
-                <?php foreach ($days as $dayOption): ?>
+                <?php foreach ($dayOptions as $dayOption): ?>
                     <option value="<?php echo $dayOption; ?>"<?php echo ($filterDay === $dayOption) ? ' selected' : ''; ?>><?php echo $dayOption; ?></option>
                 <?php endforeach; ?>
             </select>
@@ -48,6 +49,7 @@ $days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 
     <div class="filter-actions">
         <button type="submit" class="btn btn-primary" id="filter-apply">Apply Filters</button>
-        <a href="?" class="btn btn-secondary" id="filter-clear">Clear Filters</a>
+        <a href="?link1=internship_calendar" class="btn btn-secondary" id="filter-clear">Clear Filters</a>
+        <button type="button" class="btn btn-primary js-open-create-modal" style="margin-left: auto;">+ New Event</button>
     </div>
 </form>

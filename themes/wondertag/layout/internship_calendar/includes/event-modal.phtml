@@ -11,7 +11,7 @@ $submitText = $isEdit ? 'Save Changes' : 'Create Event';
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="event-modal-title"><?php echo clean($modalTitle); ?></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close js-close-modal" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -19,12 +19,12 @@ $submitText = $isEdit ? 'Save Changes' : 'Create Event';
                 <input type="hidden" id="event-id" name="id" value="<?php echo intval($event['id'] ?? 0); ?>">
                 <input type="hidden" id="event-mode" name="mode" value="<?php echo $isEdit ? 'edit' : 'create'; ?>">
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-week">Week</label>
                         <input id="event-week" name="week" type="number" class="form-control" required min="1" max="8" pattern="[1-8]" value="<?php echo isset($event['week']) ? intval($event['week']) : ''; ?>">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-day">Day</label>
                         <select id="event-day" name="day" class="form-control" required>
                             <option value="">Select a day</option>
@@ -34,34 +34,34 @@ $submitText = $isEdit ? 'Save Changes' : 'Create Event';
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-title">Title</label>
                         <input id="event-title" name="title" type="text" class="form-control" required minlength="3" maxlength="120" pattern=".{3,120}" value="<?php echo isset($event['title']) ? clean($event['title']) : ''; ?>">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-date">Event Date</label>
                         <input id="event-date" name="event_date" type="date" class="form-control" required min="2024-01-01" max="2099-12-31" value="<?php echo isset($event['event_date']) ? clean($event['event_date']) : ''; ?>">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-description">Description</label>
                         <textarea id="event-description" name="description" class="form-control" rows="4" maxlength="1000"><?php echo isset($event['description']) ? clean($event['description']) : ''; ?></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-success-criteria">Success Criteria</label>
                         <textarea id="event-success-criteria" name="success_criteria" class="form-control" rows="4" maxlength="1000"><?php echo isset($event['success_criteria']) ? clean($event['success_criteria']) : ''; ?></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-row">
                         <label for="event-traps">Traps</label>
                         <textarea id="event-traps" name="traps" class="form-control" rows="4" maxlength="1000"><?php echo isset($event['traps']) ? clean($event['traps']) : ''; ?></textarea>
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary js-close-modal" data-dismiss="modal">Close</button>
                     <button id="event-submit" type="submit" class="btn btn-primary"><?php echo clean($submitText); ?></button>
                 </div>
             </form>

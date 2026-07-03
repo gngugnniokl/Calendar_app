@@ -20,6 +20,9 @@ if ($week < 1) {
     $week = 1;
 }
 $search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
+$day    = isset($_GET['day']) ? trim((string) $_GET['day']) : '';
+$from   = isset($_GET['from']) ? trim((string) $_GET['from']) : '';
+$to     = isset($_GET['to']) ? trim((string) $_GET['to']) : '';
 
 // Fetch data via functions
 $wo = [];
@@ -29,6 +32,9 @@ $wo['search']          = $search;
 $wo['calendar_events'] = Wo_GetInternshipCalendarEvents($conn, [
     'week'   => $week,
     'search' => $search,
+    'day'    => $day,
+    'from'   => $from,
+    'to'     => $to,
 ]);
 $wo['week_bounds'] = Wo_GetInternshipCalendarWeekBounds($conn);
 
