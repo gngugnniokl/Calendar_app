@@ -1,0 +1,14 @@
+<?php
+// stats-strip.phtml
+// Extract dashboard statistics cards.
+$stats = $stats ?? [];
+?>
+<div class="stat-grid">
+    <?php foreach ($stats as $s): ?>
+        <div class="stat-card">
+            <span class="stat-value"><?php echo clean($s['value']); ?></span>
+            <span class="stat-label"><?php echo clean($s['label']); ?></span>
+            <span class="stat-note"><?php echo clean($s['note']); ?></span>
+        </div>
+    <?php endforeach; ?>
+</div>

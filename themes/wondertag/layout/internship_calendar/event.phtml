@@ -1,0 +1,51 @@
+<?php
+// event.phtml
+// Contains only event page markup.
+// Expected variables: $event
+?>
+<?php if (!$event): ?>
+    <?php
+    $empty_message = "That event couldn't be found. It may have been deleted.";
+    $empty_link = "index.php";
+    $empty_link_text = "Back to Home";
+    include __DIR__ . '/includes/empty-state.phtml';
+    ?>
+<?php else: ?>
+
+<article class="event-detail">
+    <div class="event-detail-header">
+        <span class="week-tab"><?php echo clean($event['day']); ?> &middot; Week <?php echo intval($event['week']); ?></span>
+        <time><?php echo format_date($event['event_date'], 'l, F j, Y'); ?></time>
+    </div>
+
+    <h1><?php echo clean($event['title']); ?></h1>
+
+    <?php if (!empty($event['description'])): ?>
+    <section class="event-block">
+        <h2>Description</h2>
+        <p><?php echo nl2br(clean($event['description'])); ?></p>
+    </section>
+    <?php endif; ?>
+
+    <?php if (!empty($event['success_criteria'])): ?>
+    <section class="event-block event-block-success">
+        <h2>Success Criteria</h2>
+        <p><?php echo nl2br(clean($event['success_criteria'])); ?></p>
+    </section>
+    <?php endif; ?>
+
+    <?php if (!empty($event['traps'])): ?>
+    <section class="event-block event-block-caution">
+        <h2>Watch Outs / Traps</h2>
+        <p><?php echo nl2br(clean($event['traps'])); ?></p>
+    </section>
+    <?php endif; ?>
+
+    <div class="event-actions">
+        <a href="edit-event.php?id=<?php echo intval($event['id']); ?>" class="btn btn-ghost">Edit</a>
+        <a href="delete-event.php?id=<?php echo intval($event['id']); ?>" class="btn btn-danger js-confirm-delete">Delete</a>
+        <a href="calendar.php?week=<?php echo intval($event['week']); ?>" class="btn btn-ghost">&larr; Back to Week <?php echo intval($event['week']); ?></a>
+    </div>
+</article>
+
+<?php endif; ?>

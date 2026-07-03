@@ -1,0 +1,11 @@
+<?php
+// empty-state.phtml
+// Shared component for "No Events" or other empty results.
+$empty_message = $empty_message ?? 'No events found.';
+$empty_link = $empty_link ?? 'index.php';
+$empty_link_text = $empty_link_text ?? 'Back to Home';
+?>
+<div class="empty-state">
+    <p><?php echo $empty_message; ?></p>
+    <a href="<?php echo $empty_link; ?>" class="btn btn-primary"><?php echo $empty_link_text; ?></a>
+</div>

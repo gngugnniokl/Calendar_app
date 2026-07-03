@@ -1,0 +1,29 @@
+<?php
+// hero.phtml
+// Renders the page hero section.
+$hero_title = $hero_title ?? '';
+$hero_eyebrow = $hero_eyebrow ?? '';
+$hero_description = $hero_description ?? '';
+$hero_class = ($hero_title === 'Dashboard') ? 'page-intro' : 'page-intro page-intro-row';
+?>
+<section class="<?php echo $hero_class; ?>">
+    <div>
+        <?php if (!empty($hero_eyebrow)): ?>
+            <span class="eyebrow"><?php echo $hero_eyebrow; ?></span>
+        <?php endif; ?>
+        <h1><?php echo $hero_title; ?></h1>
+        <?php if (!empty($hero_description)): ?>
+            <p><?php echo $hero_description; ?></p>
+        <?php endif; ?>
+    </div>
+    <?php if (isset($show_week_nav) && $show_week_nav): ?>
+        <div class="week-nav">
+            <?php if ($week > $min_week): ?>
+                <a href="calendar.php?week=<?php echo $week - 1; ?>" class="btn btn-ghost">&larr; Prev</a>
+            <?php endif; ?>
+            <?php if ($week < $max_week): ?>
+                <a href="calendar.php?week=<?php echo $week + 1; ?>" class="btn btn-ghost">Next &rarr;</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</section>

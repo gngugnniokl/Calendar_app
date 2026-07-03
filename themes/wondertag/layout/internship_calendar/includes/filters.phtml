@@ -1,0 +1,7 @@
+<?php
+// filters.phtml
+// Reusable search, filter, and sort controls.
+?>
+<form class="search-form" method="GET" action="">
+    <input type="text" name="q" placeholder="Search events..." class="js-search-input" value="<?php echo isset($_GET['q']) ? clean($_GET['q']) : ''; ?>">
+</form>
