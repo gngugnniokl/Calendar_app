@@ -104,9 +104,19 @@ switch ($action) {
         break;
 
     case 'filter_events':
-        // - Read filter options.
-        // - Filter events.
-        // - Return filtered events.
+
+        $data = getRequestData();
+
+        $events = Wo_GetInternshipCalendarEvents($conn, [
+            'week' => $data['week']
+        ]);
+
+        respond(
+            true,
+            'Events filtered successfully.',
+            $events
+        );
+
         break;
 
     case 'toggle_completion':
