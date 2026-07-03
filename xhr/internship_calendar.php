@@ -15,6 +15,55 @@ function respond($success, $message = '', $data = null)
     exit;
 }
 
+/**
+ * Returns cleaned POST data.
+ *
+ * @return array
+ */
+function getRequestData()
+{
+    return [
+        'id' => intval($_POST['id'] ?? 0),
+        'week' => intval($_POST['week'] ?? 0),
+        'day' => trim($_POST['day'] ?? ''),
+        'title' => trim($_POST['title'] ?? ''),
+        'description' => trim($_POST['description'] ?? ''),
+        'success_criteria' => trim($_POST['success_criteria'] ?? ''),
+        'traps' => trim($_POST['traps'] ?? ''),
+        'event_date' => trim($_POST['event_date'] ?? ''),
+        'query' => trim($_POST['query'] ?? ''),
+    ];
+}
+
+/**
+ * Validates event data.
+ *
+ * @param array $data
+ * @return array
+ */
+function validateEvent(array $data)
+{
+    $errors = [];
+
+    if ($data['week'] <= 0) {
+        $errors[] = 'Week must be a number.';
+    }
+
+    if (empty($data['day'])) {
+        $errors[] = 'Day is required.';
+    }
+
+    if (empty($data['title'])) {
+        $errors[] = 'Title is required.';
+    }
+
+    if (empty($data['event_date'])) {
+        $errors[] = 'Date is required.';
+    }
+
+    return $errors;
+}
+
 $action = $_POST['action'] ?? '';
 
 switch ($action) {
