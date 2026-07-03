@@ -1,4 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * Task A4: stat computation itself is pure PHP (not presentation) so it
+ * stays here, but the SQL and the row-by-row grouping now live in
+ * Wo_GetInternshipCalendarStats() in functions.php. No inline HTML.
+ */
+
 $page_title = 'Dashboard';
 
 require_once __DIR__ . '/../config/database.php';

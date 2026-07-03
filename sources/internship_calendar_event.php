@@ -1,4 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * Task A5: validate input → fetch data → hand off to event.phtml.
+ * No inline HTML, no raw SQL.
+ */
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 

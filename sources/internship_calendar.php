@@ -1,4 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * Task A3: this file only ever does one thing — resolve the current
+ * request's week/search filters, load data through functions.php, and
+ * hand off to the content.phtml template (Dev C). No SQL and no HTML
+ * live here.
+ */
+
 $page_title = 'Calendar';
 
 require_once __DIR__ . '/../config/database.php';
@@ -6,14 +16,16 @@ require_once __DIR__ . '/../includes/functions.php';
 
 // Get filters from URL
 $week   = isset($_GET['week']) ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
-if ($week < 1) $week = 1;
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+if ($week < 1) {
+    $week = 1;
+}
+$search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
 
 // Fetch data via functions
 $wo = [];
-$wo['page_title']     = $page_title;
-$wo['week']           = $week;
-$wo['search']         = $search;
+$wo['page_title']      = $page_title;
+$wo['week']            = $week;
+$wo['search']          = $search;
 $wo['calendar_events'] = Wo_GetInternshipCalendarEvents($conn, [
     'week'   => $week,
     'search' => $search,
