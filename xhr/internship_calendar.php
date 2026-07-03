@@ -70,21 +70,67 @@ switch ($action) {
 
     case 'save_event':
         // - Read and validate request data.
+        $data = getRequestData();
+        $errors = validateEvent($data);
+
+        if (!empty($errors)) {
+            respond(false, implode(' ', $errors));
+        }
+
         // - Save event using helper function.
+        $eventId = Wo_SaveInternshipCalendarEvent($conn, $data);
+
         // - Return JSON response.
+        if ($eventId) {
+            $data['id'] = $eventId;
+            respond(true, 'Event saved successfully.', $data);
+        } else {
+            respond(false, 'Failed to save event.');
+        }
         break;
 
     case 'update_event':
         // - Read updated data.
+        $data = getRequestData();
+
+        if ($data['id'] <= 0) {
+            respond(false, 'Invalid event ID.');
+        }
+
         // - Validate input.
+        $errors = validateEvent($data);
+        if (!empty($errors)) {
+            respond(false, implode(' ', $errors));
+        }
+
         // - Update event.
+        $updated = Wo_UpdateInternshipCalendarEvent($conn, $data);
+
         // - Return JSON response.
+        if ($updated) {
+            respond(true, 'Event updated successfully.', $data);
+        } else {
+            respond(false, 'Failed to update event or no changes made.');
+        }
         break;
 
     case 'delete_event':
         // - Read event ID.
+        $data = getRequestData();
+
+        if ($data['id'] <= 0) {
+            respond(false, 'Invalid event ID.');
+        }
+
         // - Delete event.
+        $deleted = Wo_DeleteInternshipCalendarEvent($conn, $data['id']);
+
         // - Return JSON response.
+        if ($deleted) {
+            respond(true, 'Event deleted successfully.');
+        } else {
+            respond(false, 'Failed to delete event.');
+        }
         break;
 
     case 'search_events':
@@ -105,7 +151,7 @@ switch ($action) {
 
     case 'filter_events':
 
-        $data = getRequestData();
+        $data = $getRequestData();
 
         $events = Wo_GetInternshipCalendarEvents($conn, [
             'week' => $data['week']
@@ -121,8 +167,21 @@ switch ($action) {
 
     case 'toggle_completion':
         // - Read event ID.
+        $data = getRequestData();
+        
+        if ($data['id'] <= 0) {
+            respond(false, 'Invalid event ID.');
+        }
+
         // - Toggle completion status.
+        $updatedEvent = Wo_ToggleInternshipEventCompletion($conn, $data['id']);
+
         // - Return updated event.
+        if ($updatedEvent) {
+            respond(true, 'Completion status toggled successfully.', $updatedEvent);
+        } else {
+            respond(false, 'Failed to toggle completion status.');
+        }
         break;
 
     default:
