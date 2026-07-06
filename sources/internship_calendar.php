@@ -14,29 +14,42 @@ $page_title = 'Calendar';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-// Get filters from URL
-$week   = isset($_GET['week']) ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
-if ($week < 1) {
-    $week = 1;
+// Check if any specific view or filters are requested
+$has_filters = !empty($_GET['week']) || !empty($_GET['search']) || !empty($_GET['day']) || !empty($_GET['from']) || !empty($_GET['to']);
+
+if (!$has_filters) {
+    // Show Home Page
+    $wo = [];
+    $wo['page_title']   = $page_title;
+    $wo['weeks']        = Wo_GetInternshipCalendarWeeks($conn);
+    $wo['current_week'] = Wo_GetCurrentInternshipWeek($conn);
+    
+    $wo['content'] = Wo_LoadPage('internship_calendar/home');
+} else {
+    // Get filters from URL
+    $week   = !empty($_GET['week']) ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
+    if ($week < 1) {
+        $week = 1;
+    }
+    $search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
+    $day    = isset($_GET['day']) ? trim((string) $_GET['day']) : '';
+    $from   = isset($_GET['from']) ? trim((string) $_GET['from']) : '';
+    $to     = isset($_GET['to']) ? trim((string) $_GET['to']) : '';
+
+    // Fetch data via functions
+    $wo = [];
+    $wo['page_title']      = $page_title;
+    $wo['week']            = $week;
+    $wo['search']          = $search;
+    $wo['calendar_events'] = Wo_GetInternshipCalendarEvents($conn, [
+        'week'   => (!empty($_GET['week']) ? $week : null), // Allow "All weeks" if search/filters are active
+        'search' => $search,
+        'day'    => $day,
+        'from'   => $from,
+        'to'     => $to,
+    ]);
+    $wo['week_bounds'] = Wo_GetInternshipCalendarWeekBounds($conn);
+
+    // Render page — platform's own layout flow wraps this
+    $wo['content'] = Wo_LoadPage('internship_calendar/content');
 }
-$search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
-$day    = isset($_GET['day']) ? trim((string) $_GET['day']) : '';
-$from   = isset($_GET['from']) ? trim((string) $_GET['from']) : '';
-$to     = isset($_GET['to']) ? trim((string) $_GET['to']) : '';
-
-// Fetch data via functions
-$wo = [];
-$wo['page_title']      = $page_title;
-$wo['week']            = $week;
-$wo['search']          = $search;
-$wo['calendar_events'] = Wo_GetInternshipCalendarEvents($conn, [
-    'week'   => $week,
-    'search' => $search,
-    'day'    => $day,
-    'from'   => $from,
-    'to'     => $to,
-]);
-$wo['week_bounds'] = Wo_GetInternshipCalendarWeekBounds($conn);
-
-// Render page — platform's own layout flow wraps this
-$wo['content'] = Wo_LoadPage('internship_calendar/content');
