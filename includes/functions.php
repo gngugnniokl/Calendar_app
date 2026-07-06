@@ -446,3 +446,24 @@ function Wo_LoadPage($page_url) {
     }
     return "Template not found: " . $path;
 }
+/**
+ * Wo_GetInternshipCalendarWeeks() — all events grouped by week number,
+ * used for the overview/home page. Keyed array: [week_num => [events]].
+ *
+ * @param mysqli $conn
+ * @return array<int, array<int, array<string, mixed>>>
+ */
+function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
+{
+    $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
+    $result = mysqli_query($conn, $sql);
+
+    $weeks = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $weeks[$row['week']][] = $row;
+        }
+    }
+
+    return $weeks;
+}
