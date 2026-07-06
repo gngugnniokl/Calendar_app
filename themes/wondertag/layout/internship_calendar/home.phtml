@@ -1,0 +1,25 @@
+<?php
+// home.phtml
+// Acts as the home overview page.
+// Expected variables: $weeks, $current_week
+$hero_title = "Internship Log";
+$hero_eyebrow = "Overview";
+$show_week_nav = false;
+include __DIR__ . '/includes/hero.phtml';
+?>
+
+<div class="week-grid">
+    <?php for ($i = 1; $i <= 8; $i++): ?>
+        <?php $events = $weeks[$i] ?? []; ?>
+        <a href="?link1=internship_calendar&week=<?php echo $i; ?>" class="week-card <?php echo ($i === $current_week) ? 'is-current' : ''; ?>">
+            <div class="week-card-top">
+                <span class="week-tab">Wk <?php echo $i; ?></span>
+                <?php if ($i === $current_week): ?>
+                    <span class="badge-live">Current</span>
+                <?php endif; ?>
+            </div>
+            <h2>Week <?php echo $i; ?></h2>
+            <p class="week-count"><?php echo count($events); ?> event<?php echo count($events) !== 1 ? 's' : ''; ?></p>
+        </a>
+    <?php endfor; ?>
+</div>
