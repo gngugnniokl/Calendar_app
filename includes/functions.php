@@ -237,6 +237,9 @@ function Wo_GetInternshipCalendarEvents(mysqli $conn, array $filters = []): arra
 {
     $week   = isset($filters['week']) ? intval($filters['week']) : null;
     $search = isset($filters['search']) ? trim((string) $filters['search']) : '';
+    $day    = isset($filters['day']) ? trim((string) $filters['day']) : '';
+    $from   = isset($filters['from']) ? trim((string) $filters['from']) : '';
+    $to     = isset($filters['to']) ? trim((string) $filters['to']) : '';
 
     $sql    = "SELECT * FROM calendar_events WHERE 1=1";
     $types  = "";
@@ -252,6 +255,24 @@ function Wo_GetInternshipCalendarEvents(mysqli $conn, array $filters = []): arra
         $sql .= " AND title LIKE ?";
         $types .= "s";
         $params[] = "%" . $search . "%";
+    }
+
+    if ($day !== '') {
+        $sql .= " AND day = ?";
+        $types .= "s";
+        $params[] = $day;
+    }
+
+    if ($from !== '') {
+        $sql .= " AND event_date >= ?";
+        $types .= "s";
+        $params[] = $from;
+    }
+
+    if ($to !== '') {
+        $sql .= " AND event_date <= ?";
+        $types .= "s";
+        $params[] = $to;
     }
 
     $sql .= " ORDER BY event_date ASC";
@@ -396,7 +417,44 @@ function get_week_bounds(mysqli $conn): array
         'max_week' => $bounds['max'],
     ];
 }
-function Wo_GetInternshipCalendarWeeks($conn) {
+
+/**
+ * Mock Wo_LoadPage to render themes/wondertag templates for testing
+ */
+function Wo_LoadPage($page_url) {
+    global $wo;
+    
+    // Automatically map all $wo array keys to local variables for Developer C's templates
+    if (is_array($wo)) {
+        // Alias calendar_events to days to match the template expectations
+        if (isset($wo['calendar_events']) && !isset($wo['days'])) {
+            $wo['days'] = $wo['calendar_events'];
+        }
+        // Map week_bounds to min_week and max_week
+        if (isset($wo['week_bounds'])) {
+            $wo['min_week'] = $wo['week_bounds']['min'] ?? 1;
+            $wo['max_week'] = $wo['week_bounds']['max'] ?? 1;
+        }
+        extract($wo);
+    }
+
+    $path = __DIR__ . '/../themes/wondertag/layout/' . $page_url . '.phtml';
+    if (file_exists($path)) {
+        ob_start();
+        include $path;
+        return ob_get_clean();
+    }
+    return "Template not found: " . $path;
+}
+/**
+ * Wo_GetInternshipCalendarWeeks() — all events grouped by week number,
+ * used for the overview/home page. Keyed array: [week_num => [events]].
+ *
+ * @param mysqli $conn
+ * @return array<int, array<int, array<string, mixed>>>
+ */
+function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
+{
     $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
     $result = mysqli_query($conn, $sql);
 

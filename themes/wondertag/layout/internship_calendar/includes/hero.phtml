@@ -9,21 +9,21 @@ $hero_class = ($hero_title === 'Dashboard') ? 'page-intro' : 'page-intro page-in
 <section class="<?php echo $hero_class; ?>">
     <div>
         <?php if (!empty($hero_eyebrow)): ?>
-            <span class="eyebrow"><?php echo $hero_eyebrow; ?></span>
+            <span class="eyebrow hero-eyebrow"><?php echo clean($hero_eyebrow); ?></span>
         <?php endif; ?>
-        <h1><?php echo $hero_title; ?></h1>
+        <h1 class="hero-title"><?php echo clean($hero_title); ?></h1>
         <?php if (!empty($hero_description)): ?>
-            <p><?php echo $hero_description; ?></p>
+            <p class="hero-description"><?php echo clean($hero_description); ?></p>
         <?php endif; ?>
     </div>
     <?php if (isset($show_week_nav) && $show_week_nav): ?>
-        <div class="week-nav">
+        <nav class="week-nav" aria-label="Week navigation">
             <?php if ($week > $min_week): ?>
-                <a href="calendar.php?week=<?php echo $week - 1; ?>" class="btn btn-ghost">&larr; Prev</a>
+                <a href="?link1=internship_calendar&week=<?php echo $week - 1; ?>" class="btn btn-ghost">&larr; Prev</a>
             <?php endif; ?>
             <?php if ($week < $max_week): ?>
-                <a href="calendar.php?week=<?php echo $week + 1; ?>" class="btn btn-ghost">Next &rarr;</a>
+                <a href="?link1=internship_calendar&week=<?php echo $week + 1; ?>" class="btn btn-ghost">Next &rarr;</a>
             <?php endif; ?>
-        </div>
+        </nav>
     <?php endif; ?>
 </section>
