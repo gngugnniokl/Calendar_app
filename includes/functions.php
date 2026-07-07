@@ -225,6 +225,99 @@ function Wo_GetInternshipCalendarWeekBounds(mysqli $conn): array
 }
 
 /**
+ * Wo_ExportInternshipCalendarExcel() — downloads the current calendar view
+ * as an Excel-compatible spreadsheet (.xlsx) using PHP's ZipArchive when available.
+ *
+ * @param mysqli $conn
+ * @param array{week?: int|string, search?: string, day?: string, from?: string, to?: string} $filters
+ * @return void
+ */
+function Wo_ExportInternshipCalendarExcel(mysqli $conn, array $filters = []): void
+{
+    $events = Wo_GetInternshipCalendarEvents($conn, $filters);
+    $rows = [];
+    $rows[] = ['Week', 'Day', 'Date', 'Title', 'Description', 'Success Criteria', 'Traps'];
+
+    foreach ($events as $event) {
+        $rows[] = [
+            isset($event['week']) ? intval($event['week']) : '',
+            isset($event['day']) ? (string) $event['day'] : '',
+            isset($event['event_date']) ? (string) $event['event_date'] : '',
+            isset($event['title']) ? (string) $event['title'] : '',
+            isset($event['description']) ? (string) $event['description'] : '',
+            isset($event['success_criteria']) ? (string) $event['success_criteria'] : '',
+            isset($event['traps']) ? (string) $event['traps'] : '',
+        ];
+    }
+
+    $filename = 'internship-calendar-export.xlsx';
+    $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+    $sheetXml .= '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
+    $sheetXml .= '<sheetData>';
+
+    foreach ($rows as $rowIndex => $rowValues) {
+        $sheetXml .= '<row r="' . ($rowIndex + 1) . '">';
+        foreach ($rowValues as $colIndex => $value) {
+            $column = chr(65 + $colIndex);
+            $cellRef = $column . ($rowIndex + 1);
+            $cellStyle = $rowIndex === 0 ? '1' : '0';
+            $safeValue = str_replace(["\r\n", "\n", "\r"], "\n", (string) $value);
+            $safeValue = str_replace(['&', '<', '>'], ['&amp;', '&lt;', '&gt;'], $safeValue);
+            $sheetXml .= '<c r="' . $cellRef . '" s="' . $cellStyle . '" t="inlineStr"><is><t xml:space="preserve">' . $safeValue . '</t></is></c>';
+        }
+        $sheetXml .= '</row>';
+    }
+
+    $sheetXml .= '</sheetData></worksheet>';
+
+    $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+    $rootRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+    $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Calendar" sheetId="1" r:id="rId1"/></sheets></workbook>';
+    $workbookRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+    $styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><b/></font></fonts><fills count="1"><fill><patternFill patternType="none"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+
+    if (class_exists('ZipArchive')) {
+        $tempFile = tempnam(sys_get_temp_dir(), 'calendar-export-');
+        if ($tempFile !== false) {
+            $zip = new ZipArchive();
+            if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+                $zip->addFromString('[Content_Types].xml', $contentTypes);
+                $zip->addFromString('_rels/.rels', $rootRels);
+                $zip->addFromString('xl/workbook.xml', $workbook);
+                $zip->addFromString('xl/_rels/workbook.xml.rels', $workbookRels);
+                $zip->addFromString('xl/worksheets/sheet1.xml', $sheetXml);
+                $zip->addFromString('xl/styles.xml', $styles);
+                $zip->close();
+
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment; filename="' . $filename . '"');
+                header('Cache-Control: max-age=0');
+                readfile($tempFile);
+                unlink($tempFile);
+                exit;
+            }
+        }
+    }
+
+    $csvHandle = fopen('php://temp', 'r+');
+    fputcsv($csvHandle, ['Week', 'Day', 'Date', 'Title', 'Description', 'Success Criteria', 'Traps']);
+    foreach ($rows as $index => $row) {
+        if ($index === 0) {
+            continue;
+        }
+        fputcsv($csvHandle, $row);
+    }
+    rewind($csvHandle);
+    $csvContent = stream_get_contents($csvHandle);
+    fclose($csvHandle);
+
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    echo $csvContent;
+    exit;
+}
+
+/**
  * Wo_GetInternshipCalendarEvents() — filterable event list (by week
  * and/or a title search). Both filters are optional and both go
  * through a prepared statement.

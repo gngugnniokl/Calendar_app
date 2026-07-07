@@ -17,6 +17,31 @@ require_once __DIR__ . '/../includes/functions.php';
 // Check if any specific view or filters are requested
 $has_filters = !empty($_GET['week']) || !empty($_GET['search']) || !empty($_GET['day']) || !empty($_GET['from']) || !empty($_GET['to']);
 
+$is_all_weeks = empty($_GET['week']);
+$week   = !$is_all_weeks ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
+if ($week < 1) {
+    $week = 1;
+}
+$search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
+$day    = isset($_GET['day']) ? trim((string) $_GET['day']) : '';
+$from   = isset($_GET['from']) ? trim((string) $_GET['from']) : '';
+$to     = isset($_GET['to']) ? trim((string) $_GET['to']) : '';
+
+$has_active_search_filters = ($search !== '' || $day !== '' || $from !== '' || $to !== '');
+
+if (!empty($_GET['export']) && $_GET['export'] === 'excel') {
+    $export_filters = [];
+    if (!$is_all_weeks || $has_active_search_filters) {
+        $export_filters['week'] = $is_all_weeks ? null : $week;
+        $export_filters['search'] = $search;
+        $export_filters['day'] = $day;
+        $export_filters['from'] = $from;
+        $export_filters['to'] = $to;
+    }
+
+    Wo_ExportInternshipCalendarExcel($conn, $export_filters);
+}
+
 if (!$has_filters) {
     // Show Home Page
     $wo = [];
@@ -26,19 +51,6 @@ if (!$has_filters) {
     
     $wo['content'] = Wo_LoadPage('internship_calendar/home');
 } else {
-    // Get filters from URL
-    $is_all_weeks = empty($_GET['week']);
-    $week   = !$is_all_weeks ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
-    if ($week < 1) {
-        $week = 1;
-    }
-    $search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
-    $day    = isset($_GET['day']) ? trim((string) $_GET['day']) : '';
-    $from   = isset($_GET['from']) ? trim((string) $_GET['from']) : '';
-    $to     = isset($_GET['to']) ? trim((string) $_GET['to']) : '';
-
-    $has_active_search_filters = ($search !== '' || $day !== '' || $from !== '' || $to !== '');
-
     // Fetch data via functions
     $wo = [];
     $wo['page_title']      = $page_title;
@@ -46,6 +58,9 @@ if (!$has_filters) {
     $wo['is_all_weeks']    = $is_all_weeks;
     $wo['has_active_search_filters'] = $has_active_search_filters;
     $wo['search']          = $search;
+    $wo['day']             = $day;
+    $wo['from']            = $from;
+    $wo['to']              = $to;
     $wo['calendar_events'] = Wo_GetInternshipCalendarEvents($conn, [
         'week'   => ($is_all_weeks ? null : $week), // Allow "All weeks" if search/filters are active
         'search' => $search,
