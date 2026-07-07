@@ -224,6 +224,17 @@
 
         dismissFlashMessage();
 
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+
         // Search Input Setup
         const searchInput = document.getElementById('event-search');
         if (searchInput) {
@@ -258,24 +269,42 @@
         });
 
         // Toggle Completion Flow
-        document.addEventListener('change', async (e) => {
-            const toggle = e.target.closest('.js-toggle-completion');
-            if (toggle) {
-                const id = toggle.dataset.id;
+        document.addEventListener('click', async (e) => {
+            const toggleBtn = e.target.closest('.js-toggle-completion-btn');
+            if (toggleBtn) {
+                e.preventDefault();
+                const id = toggleBtn.dataset.id;
                 
-                // Optimistic UI could be done here, but let's wait for server
-                setLoading(toggle, true);
+                setLoading(toggleBtn, true);
                 
                 const result = await toggleCompletion(id);
                 
-                setLoading(toggle, false);
+                setLoading(toggleBtn, false);
                 
                 if (result.success) {
-                    showMessage(result.message);
-                    toggle.checked = result.data.completed == 1;
+                    const isCompleted = result.data.completed == 1;
+                    
+                    // Update button UI
+                    toggleBtn.textContent = isCompleted ? 'Completed ✓' : 'Mark Complete';
+                    if (isCompleted) {
+                        toggleBtn.classList.remove('btn-primary');
+                        toggleBtn.classList.add('btn-ghost');
+                    } else {
+                        toggleBtn.classList.remove('btn-ghost');
+                        toggleBtn.classList.add('btn-primary');
+                    }
+
+                    // Update parent article if in detail view
+                    const article = toggleBtn.closest('article.event-detail');
+                    if (article) {
+                        if (isCompleted) {
+                            article.classList.add('event-completed');
+                        } else {
+                            article.classList.remove('event-completed');
+                        }
+                    }
                 } else {
                     showMessage(result.message, 'error');
-                    toggle.checked = !toggle.checked; // Revert visually
                 }
             }
         });

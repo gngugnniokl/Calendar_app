@@ -27,7 +27,8 @@ if (!$has_filters) {
     $wo['content'] = Wo_LoadPage('internship_calendar/home');
 } else {
     // Get filters from URL
-    $week   = !empty($_GET['week']) ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
+    $is_all_weeks = empty($_GET['week']);
+    $week   = !$is_all_weeks ? intval($_GET['week']) : Wo_GetCurrentInternshipWeek($conn);
     if ($week < 1) {
         $week = 1;
     }
@@ -36,13 +37,17 @@ if (!$has_filters) {
     $from   = isset($_GET['from']) ? trim((string) $_GET['from']) : '';
     $to     = isset($_GET['to']) ? trim((string) $_GET['to']) : '';
 
+    $has_active_search_filters = ($search !== '' || $day !== '' || $from !== '' || $to !== '');
+
     // Fetch data via functions
     $wo = [];
     $wo['page_title']      = $page_title;
     $wo['week']            = $week;
+    $wo['is_all_weeks']    = $is_all_weeks;
+    $wo['has_active_search_filters'] = $has_active_search_filters;
     $wo['search']          = $search;
     $wo['calendar_events'] = Wo_GetInternshipCalendarEvents($conn, [
-        'week'   => (!empty($_GET['week']) ? $week : null), // Allow "All weeks" if search/filters are active
+        'week'   => ($is_all_weeks ? null : $week), // Allow "All weeks" if search/filters are active
         'search' => $search,
         'day'    => $day,
         'from'   => $from,

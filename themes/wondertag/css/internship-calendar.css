@@ -41,6 +41,28 @@
     --shadow-card: 0 1px 2px rgba(30, 35, 32, 0.04), 0 8px 20px -12px rgba(30, 35, 32, 0.18);
 }
 
+[data-theme="dark"] {
+    --paper: #121413;
+    --surface: #1E211F;
+    --ink: #E8EBE9;
+    --ink-soft: #A3A8A4;
+    --muted: #747976;
+    --hairline: #333835;
+    --pine: #4D8554;
+    --pine-dark: #7DBA85;
+    --pine-tint: #1F3022;
+    --clay: #D9693B;
+    --clay-tint: #4A281A;
+    --brass: #D19A36;
+    --brass-tint: #423214;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
+}
+
+:root:not([data-theme="dark"]) .theme-icon-dark { display: none; }
+[data-theme="dark"] .theme-icon-light { display: none; }
+[data-theme="dark"] .theme-icon-dark { display: inline; }
+
 * { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }

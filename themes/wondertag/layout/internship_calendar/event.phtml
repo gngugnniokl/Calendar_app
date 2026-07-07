@@ -12,7 +12,7 @@
     ?>
 <?php else: ?>
 
-<article class="event-detail" data-event-id="<?php echo intval($event['id']); ?>">
+<article class="event-detail <?php echo !empty($event['completed']) ? 'event-completed' : ''; ?>" data-event-id="<?php echo intval($event['id']); ?>">
     <header class="event-detail-header">
         <div class="event-detail-meta">
             <span class="week-tab"><?php echo clean($event['day']); ?> &middot; Week <?php echo intval($event['week']); ?></span>
@@ -20,12 +20,8 @@
         </div>
 
         <div class="event-completion-toggle">
-            <label class="checkbox-label" for="event-complete-<?php echo intval($event['id']); ?>">
-                <input id="event-complete-<?php echo intval($event['id']); ?>" type="checkbox" class="js-event-completion-toggle" data-event-id="<?php echo intval($event['id']); ?>" <?php echo !empty($event['completed']) ? 'checked' : ''; ?>>
-                Completed
-            </label>
-            <button type="button" class="btn btn-secondary js-event-completion-toggle-btn" data-event-id="<?php echo intval($event['id']); ?>">
-                <?php echo !empty($event['completed']) ? 'Mark Incomplete' : 'Mark Complete'; ?>
+            <button type="button" class="btn <?php echo !empty($event['completed']) ? 'btn-ghost' : 'btn-primary'; ?> js-toggle-completion-btn" data-id="<?php echo intval($event['id']); ?>">
+                <?php echo !empty($event['completed']) ? 'Completed ✓' : 'Mark Complete'; ?>
             </button>
         </div>
     </header>

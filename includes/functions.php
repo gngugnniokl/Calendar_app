@@ -322,11 +322,11 @@ function Wo_GetInternshipCalendarStats(mysqli $conn): array
         return $e['event_date'];
     }, $events));
 
-    $completed = array_filter($events, function (array $e) use ($today): bool {
-        return $e['event_date'] < $today;
+    $completed = array_filter($events, function (array $e): bool {
+        return !empty($e['completed']);
     });
-    $upcoming = array_filter($events, function (array $e) use ($today): bool {
-        return $e['event_date'] >= $today;
+    $upcoming = array_filter($events, function (array $e): bool {
+        return empty($e['completed']);
     });
 
     $current_week   = get_current_week($conn);
