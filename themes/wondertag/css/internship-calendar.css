@@ -229,6 +229,13 @@ h1, h2, h3 {
 
 .week-nav { display: flex; gap: 8px; }
 
+.export-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 24px;
+}
+
 /* ---------------------------------------------------------------------
    Buttons
    --------------------------------------------------------------------- */
@@ -577,7 +584,21 @@ h1, h2, h3 {
 .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1 1 180px; min-width: 140px; }
 .filter-group label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
 
-.filter-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.filter-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; align-items: center; }
+.filter-actions .btn {
+    white-space: nowrap;
+    min-height: 44px;
+    height: 44px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+}
 
 .search-loading { position: relative; pointer-events: none; opacity: 0.75; }
 .search-loading::after {

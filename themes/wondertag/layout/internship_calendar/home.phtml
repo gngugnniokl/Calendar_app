@@ -8,6 +8,10 @@ $show_week_nav = false;
 include __DIR__ . '/includes/hero.phtml';
 ?>
 
+<div class="export-actions">
+    <a href="?link1=internship_calendar&export=excel" class="btn btn-primary">Export Excel</a>
+</div>
+
 <div class="week-grid">
     <?php for ($i = 1; $i <= 8; $i++): ?>
         <?php $events = $weeks[$i] ?? []; ?>
