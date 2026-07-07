@@ -23,7 +23,7 @@ function get_db_connection(): mysqli
 
     $host = getenv('DB_HOST') ?: 'localhost';
     $user = getenv('DB_USER') ?: 'root';
-    $pass = getenv('DB_PASS') ?: 'ememandu';
+    $pass = getenv('DB_PASS') ?: '';
     $name = getenv('DB_NAME') ?: 'internship_calendar';
 
     // Don't let mysqli_connect() throw a warning with credentials in it.
