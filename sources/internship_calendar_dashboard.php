@@ -28,4 +28,11 @@ $wo['progress_pct']     = $stats['progress_pct'];
 $wo['recent_completed'] = array_slice(array_reverse($stats['completed']), 0, 5);
 $wo['up_next']          = array_slice($stats['upcoming'], 0, 5);
 
+$wo['stat_cards'] = [
+    ['label' => 'Total Tasks', 'value' => $stats['total_events'], 'note' => 'Logged overall'],
+    ['label' => 'Tasks Completed', 'value' => $stats['completed_count'], 'note' => 'Marked done'],
+    ['label' => 'Tasks Pending', 'value' => $stats['upcoming_count'], 'note' => 'Up next'],
+    ['label' => 'Weeks Active', 'value' => $stats['total_weeks'], 'note' => "Out of {$stats['program_length']}"],
+];
+
 $wo['content'] = Wo_LoadPage('internship_calendar/dashboard');

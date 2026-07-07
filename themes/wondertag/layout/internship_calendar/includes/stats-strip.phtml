@@ -1,10 +1,10 @@
 <?php
 // stats-strip.phtml
 // Extract dashboard statistics cards.
-$stats = $stats ?? [];
+$stat_cards = $stat_cards ?? [];
 ?>
 <div class="stat-grid">
-    <?php foreach ($stats as $s): ?>
+    <?php foreach ($stat_cards as $s): ?>
         <div class="stat-card" aria-label="<?php echo clean($s['label']); ?> statistics" data-stat="<?php echo clean($s['label']); ?>">
             <span class="stat-value"><?php echo clean($s['value']); ?></span>
             <span class="stat-label"><?php echo clean($s['label']); ?></span>
