@@ -21,6 +21,19 @@ function get_db_connection(): mysqli
         return $conn;
     }
 
+    // Load .env.local into environment if it exists
+    $envFile = __DIR__ . '/../.env.local';
+    if (file_exists($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (str_starts_with(trim($line), '#')) continue;
+            if (strpos($line, '=') === false) continue;
+            [$key, $value] = explode('=', $line, 2);
+            $value = trim($value, " \t\n\r\0\x0B'\"");
+            putenv(trim($key) . '=' . $value);
+        }
+    }
+
     $host = getenv('DB_HOST') ?: 'localhost';
     $user = getenv('DB_USER') ?: 'root';
     $pass = getenv('DB_PASS') ?: '';

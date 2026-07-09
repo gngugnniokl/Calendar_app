@@ -560,3 +560,38 @@ function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
 
     return $weeks;
 }
+
+/**
+ * Wo_GetTimelineUser() — looks up a user by username from the
+ * Wo_Users table. Returns null if not found.
+ * Uses a prepared statement to avoid injection.
+ *
+ * @param mysqli $conn
+ * @param string $username
+ * @return array<string, mixed>|null
+ */
+function Wo_GetTimelineUser(mysqli $conn, string $username): ?array
+{
+    $query = "
+        SELECT 
+            user_id, 
+            username, 
+            CONCAT(first_name, ' ', last_name) AS name, 
+            about, 
+            avatar, 
+            CASE 
+                WHEN admin = '1' THEN 'admin'
+                WHEN admin = '2' THEN 'mentor'
+                ELSE 'intern'
+            END AS role
+        FROM Wo_Users 
+        WHERE username = ? 
+        LIMIT 1
+    ";
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ?: null;
+}

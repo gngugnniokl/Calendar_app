@@ -10,7 +10,8 @@ $link1 = $_GET['link1'] ?? 'internship_calendar';
 $valid_pages = [
     'internship_calendar',
     'internship_calendar_dashboard',
-    'internship_calendar_event'
+    'internship_calendar_event',
+    'timeline',
 ];
 
 if (in_array($link1, $valid_pages)) {
