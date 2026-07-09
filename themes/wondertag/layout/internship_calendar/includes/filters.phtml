@@ -1,0 +1,58 @@
+<?php
+// filters.phtml
+// Reusable search, filter, and sort controls.
+$searchQuery = isset($_GET['search']) ? clean($_GET['search']) : (isset($_GET['q']) ? clean($_GET['q']) : '');
+$filterWeek = isset($_GET['week']) ? intval($_GET['week']) : '';
+$filterDay = isset($_GET['day']) ? clean($_GET['day']) : '';
+$filterFrom = isset($_GET['from']) ? clean($_GET['from']) : '';
+$filterTo = isset($_GET['to']) ? clean($_GET['to']) : '';
+$dayOptions = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+?>
+<form class="search-form" method="GET" action="" id="event-filters-form">
+    <input type="hidden" name="link1" value="internship_calendar">
+    <div class="filter-row">
+        <div class="filter-group">
+            <label for="filter-search">Search</label>
+            <input id="filter-search" type="text" name="search" placeholder="Search events..." class="js-search-input" value="<?php echo $searchQuery; ?>">
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-week">Week</label>
+            <select id="filter-week" name="week">
+                <option value="">All weeks</option>
+                <?php for ($week = 1; $week <= 8; $week++): ?>
+                    <option value="<?php echo $week; ?>"<?php echo ($filterWeek === $week) ? ' selected' : ''; ?>>Week <?php echo $week; ?></option>
+                <?php endfor; ?>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-day">Day</label>
+            <select id="filter-day" name="day">
+                <option value="">All days</option>
+                <?php foreach ($dayOptions as $dayOption): ?>
+                    <option value="<?php echo $dayOption; ?>"<?php echo ($filterDay === $dayOption) ? ' selected' : ''; ?>><?php echo $dayOption; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-from">From</label>
+            <input id="filter-from" type="date" name="from" value="<?php echo $filterFrom; ?>">
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-to">To</label>
+            <input id="filter-to" type="date" name="to" value="<?php echo $filterTo; ?>">
+        </div>
+    </div>
+
+    <div class="filter-actions">
+        <button type="submit" class="btn btn-primary" id="filter-apply">Apply Filters</button>
+        <a href="?link1=internship_calendar" class="btn btn-secondary" id="filter-clear">Clear Filters</a>
+        <div class="filter-actions-right">
+            <a href="?link1=internship_calendar&export=excel" class="btn btn-primary btn-match-new-event">Export Excel</a>
+            <button type="button" class="btn btn-primary btn-match-new-event js-open-create-modal">+ New Event</button>
+        </div>
+    </div>
+</form>

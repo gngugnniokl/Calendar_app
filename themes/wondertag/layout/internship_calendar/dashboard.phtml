@@ -1,0 +1,49 @@
+<?php
+// dashboard.phtml
+// Contains only dashboard page markup.
+// Expected variables: $progress_pct, $stats, $completed, $upcoming
+$hero_title = "Dashboard";
+$hero_eyebrow = "Program Health";
+$hero_description = "A snapshot of the whole 8-week internship, pulled straight from the database.";
+include __DIR__ . '/includes/hero.phtml';
+?>
+
+<div class="progress-block">
+    <div class="progress-labels">
+        <span>Program Progress</span>
+        <span><?php echo clean($progress_pct); ?>%</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" style="width: <?php echo intval($progress_pct); ?>%;"></div>
+    </div>
+</div>
+
+<?php include __DIR__ . '/includes/stats-strip.phtml'; ?>
+
+<section class="dashboard-split">
+    <div class="dashboard-col">
+        <h2>Recently Completed</h2>
+        <?php if (empty($recent_completed)): ?>
+            <p class="dim-note">Nothing logged as completed yet.</p>
+        <?php else: ?>
+            <ul class="mini-list">
+                <?php foreach ($recent_completed as $e): ?>
+                    <?php include __DIR__ . '/includes/event-row.phtml'; ?>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+
+    <div class="dashboard-col">
+        <h2>Up Next</h2>
+        <?php if (empty($up_next)): ?>
+            <p class="dim-note">No upcoming events on the calendar.</p>
+        <?php else: ?>
+            <ul class="mini-list">
+                <?php foreach ($up_next as $e): ?>
+                    <?php include __DIR__ . '/includes/event-row.phtml'; ?>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+</section>

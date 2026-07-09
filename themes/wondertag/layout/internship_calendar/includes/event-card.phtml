@@ -1,0 +1,16 @@
+<?php
+// event-card.phtml
+// Reusable event card component.
+$d = $d ?? [];
+?>
+<a href="?link1=internship_calendar_event&id=<?php echo intval($d['id']); ?>" class="timeline-item <?php echo is_today($d['event_date']) ? 'is-today' : ''; ?> <?php echo !empty($d['completed']) ? 'event-completed' : ''; ?>" data-event-id="<?php echo intval($d['id']); ?>">
+    <div class="timeline-marker <?php echo day_badge_class($d['day']); ?>">
+        <span class="timeline-day"><?php echo clean($d['day']); ?></span>
+        <span class="timeline-date"><?php echo format_date($d['event_date'], 'M j'); ?></span>
+    </div>
+    <div class="timeline-content">
+        <h3><?php echo clean($d['title']); ?></h3>
+        <p><?php echo clean(truncate($d['description'], 120)); ?></p>
+        <?php if (is_today($d['event_date'])): ?><span class="badge-live">Today</span><?php endif; ?>
+    </div>
+</a>

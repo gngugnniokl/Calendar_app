@@ -1,0 +1,42 @@
+<?php
+// content.phtml
+// Acts as the main page layout for the timeline.
+// Expected variables: $week, $days, $min_week, $max_week, $is_all_weeks, $has_active_search_filters
+$is_all_weeks = $is_all_weeks ?? false;
+$has_active_search_filters = $has_active_search_filters ?? false;
+
+if ($is_all_weeks) {
+    $hero_title = "Search Results";
+    $show_week_nav = false;
+} else {
+    $hero_title = "Week " . intval($week);
+    $show_week_nav = true;
+}
+
+$hero_eyebrow = "Timeline";
+include __DIR__ . '/includes/hero.phtml';
+?>
+
+<?php include __DIR__ . '/includes/filters.phtml'; ?>
+
+<?php if (empty($days)): ?>
+    <div style="margin-top: 24px;">
+        <?php
+        if ($is_all_weeks || $has_active_search_filters) {
+            $empty_message = "No events found matching your filters.";
+        } else {
+            $empty_message = "No events logged for week " . intval($week) . " yet.";
+        }
+        $empty_link = "#";
+        $empty_link_text = "Add an event";
+        $empty_link_class = "js-open-create-modal";
+        include __DIR__ . '/includes/empty-state.phtml';
+        ?>
+    </div>
+<?php else: ?>
+    <div class="timeline">
+        <?php foreach ($days as $d): ?>
+            <?php include __DIR__ . '/includes/event-card.phtml'; ?>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
