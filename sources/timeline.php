@@ -13,9 +13,6 @@ declare(strict_types=1);
  *   ?link1=timeline&u=username&type=events → sub-view (future)
  */
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
-
 // --- Resolve the requested user ---
 $username = isset($_GET['u']) ? trim((string) $_GET['u']) : '';
 $type     = isset($_GET['type']) ? trim((string) $_GET['type']) : '';
@@ -31,7 +28,6 @@ $profile = Wo_GetTimelineUser($conn, $username);
 
 if ($profile === null) {
     // User not found — show a 404-style message inside the normal layout
-    $wo = [];
     $wo['page_title'] = 'Not Found';
     $wo['content']    = '<section class="page-intro"><h1>User not found</h1>'
                       . '<p>No profile exists for <strong>' . clean($username) . '</strong>.</p>'
@@ -40,7 +36,6 @@ if ($profile === null) {
 }
 
 // --- Build the $wo state for the template ---
-$wo = [];
 $wo['page_title']    = $profile['name'] ?: $profile['username'];
 $wo['user_profile']  = $profile;
 $wo['timeline_type'] = $type;

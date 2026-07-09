@@ -9,10 +9,15 @@ declare(strict_types=1);
  * All responses are JSON: { success: bool, message: string, data: ... }
  */
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../assets/init.php';
 
 header('Content-Type: application/json');
+
+// Auth guard
+if (!Wo_IsLogged($conn)) {
+    echo json_encode(['success' => false, 'message' => 'Authentication required.']);
+    exit();
+}
 
 $s = isset($_POST['s']) ? trim((string) $_POST['s']) : '';
 
