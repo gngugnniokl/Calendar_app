@@ -560,3 +560,275 @@ function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
 
     return $weeks;
 }
+
+/**
+ * Wo_GetTimelineUser() — looks up a user by username from the
+ * Wo_Users table. Returns null if not found.
+ * Uses a prepared statement to avoid injection.
+ *
+ * @param mysqli $conn
+ * @param string $username
+ * @return array<string, mixed>|null
+ */
+function Wo_GetTimelineUser(mysqli $conn, string $username): ?array
+{
+    $query = "
+        SELECT 
+            user_id, 
+            username, 
+            CONCAT(first_name, ' ', last_name) AS name, 
+            about, 
+            avatar, 
+            CASE 
+                WHEN admin = '1' THEN 'admin'
+                WHEN admin = '2' THEN 'mentor'
+                ELSE 'intern'
+            END AS role
+        FROM Wo_Users 
+        WHERE username = ? 
+        LIMIT 1
+    ";
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ?: null;
+}
+
+/* =====================================================================
+   Authentication Functions
+   ===================================================================== */
+
+function Wo_Secure(mysqli $conn, string $string): string
+{
+    return mysqli_real_escape_string($conn, htmlspecialchars(trim($string), ENT_QUOTES, 'UTF-8'));
+}
+
+function Wo_LoadConfig(mysqli $conn): array
+{
+    $config = [];
+    try {
+        $result = mysqli_query($conn, "SELECT name, value FROM Wo_Config");
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $config[$row['name']] = $row['value'];
+            }
+        }
+    } catch (\Exception $e) {
+        // Table may not exist yet during initial setup
+    }
+    return $config;
+}
+
+function Wo_IsLogged(mysqli $conn): bool
+{
+    if (!empty($_SESSION['user_id'])) {
+        $uid = Wo_GetUserFromSessionID($conn, $_SESSION['user_id']);
+        if ($uid !== false) {
+            return true;
+        }
+    }
+    if (!empty($_COOKIE['user_id'])) {
+        $uid = Wo_GetUserFromSessionID($conn, $_COOKIE['user_id']);
+        if ($uid !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function Wo_GetUserFromSessionID(mysqli $conn, string $session_id): int|false
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_AppsSessions WHERE session_id = ? LIMIT 1");
+    if (!$stmt) {
+        return false;
+    }
+    mysqli_stmt_bind_param($stmt, "s", $session_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ? (int) $row['user_id'] : false;
+}
+
+function Wo_Login(mysqli $conn, string $username, string $password): bool
+{
+    $stmt = mysqli_prepare($conn, "SELECT * FROM Wo_Users WHERE (username = ? OR email = ?) AND active = 1 AND banned = 0 LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $user = mysqli_fetch_assoc($result);
+    if (!$user) {
+        return false;
+    }
+    return password_verify($password, $user['password']);
+}
+
+function Wo_CreateLoginSession(mysqli $conn, int $user_id): string
+{
+    $hash = sha1((string) random_int(100000000, 999999999)) . md5(microtime()) . random_int(10000000, 99999999);
+    // Delete any existing session with same hash
+    $stmt = mysqli_prepare($conn, "DELETE FROM Wo_AppsSessions WHERE session_id = ?");
+    mysqli_stmt_bind_param($stmt, "s", $hash);
+    mysqli_stmt_execute($stmt);
+    // Insert new session
+    $time = time();
+    $platform = 'web';
+    $stmt = mysqli_prepare($conn, "INSERT INTO Wo_AppsSessions (user_id, session_id, platform, time) VALUES (?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "issi", $user_id, $hash, $platform, $time);
+    mysqli_stmt_execute($stmt);
+    return $hash;
+}
+
+function Wo_UserData(mysqli $conn, int $user_id): ?array
+{
+    $stmt = mysqli_prepare($conn, "SELECT * FROM Wo_Users WHERE user_id = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    if (!$row) {
+        return null;
+    }
+    $row['name'] = $row['first_name'] . ' ' . $row['last_name'];
+    $row['role'] = match ($row['admin']) {
+        '1' => 'admin',
+        '2' => 'mentor',
+        default => 'intern',
+    };
+    return $row;
+}
+
+function Wo_RegisterUser(mysqli $conn, array $data): int|false
+{
+    if (empty($data['username']) || empty($data['email']) || empty($data['password'])) {
+        return false;
+    }
+    // Check username uniqueness
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE username = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $data['username']);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if (mysqli_fetch_assoc($result)) {
+        return false;
+    }
+    // Check email uniqueness
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $data['email']);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if (mysqli_fetch_assoc($result)) {
+        return false;
+    }
+    // Hash password and insert
+    $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
+    $first_name = $data['first_name'] ?? '';
+    $last_name = $data['last_name'] ?? '';
+    $stmt = mysqli_prepare($conn, "INSERT INTO Wo_Users (username, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "sssss", $data['username'], $data['email'], $hashed, $first_name, $last_name);
+    if (mysqli_stmt_execute($stmt)) {
+        return (int) mysqli_insert_id($conn);
+    }
+    return false;
+}
+
+function Wo_IsAdmin(): bool
+{
+    global $wo;
+    return ($wo['loggedin'] ?? false) && (($wo['user']['admin'] ?? '0') === '1');
+}
+
+function Wo_IsModerator(): bool
+{
+    global $wo;
+    return ($wo['loggedin'] ?? false) && (($wo['user']['admin'] ?? '0') === '2');
+}
+
+function Wo_UserExists(mysqli $conn, string $username): bool
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE username = ? OR email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    return (bool) mysqli_fetch_assoc($result);
+}
+
+function Wo_LastSeen(mysqli $conn, int $user_id): void
+{
+    $now = time();
+    $stmt = mysqli_prepare($conn, "UPDATE Wo_Users SET lastseen = ? WHERE user_id = ?");
+    mysqli_stmt_bind_param($stmt, "ii", $now, $user_id);
+    mysqli_stmt_execute($stmt);
+}
+
+function Wo_ResetPassword(mysqli $conn, int $user_id, string $new_password): bool
+{
+    $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+    $stmt = mysqli_prepare($conn, "UPDATE Wo_Users SET password = ? WHERE user_id = ?");
+    mysqli_stmt_bind_param($stmt, "si", $hashed, $user_id);
+    return mysqli_stmt_execute($stmt);
+}
+
+function Wo_UserIdForLogin(mysqli $conn, string $username): int|false
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE (username = ? OR email = ?) AND active = 1 LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ? (int) $row['user_id'] : false;
+}
+
+function Wo_SetLoginWithSession(mysqli $conn, string $email): void
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    if ($row) {
+        $session = Wo_CreateLoginSession($conn, (int) $row['user_id']);
+        $_SESSION['user_id'] = $session;
+    }
+}
+
+function Wo_ValidateCsrf(): bool
+{
+    return isset($_POST['csrf_token'], $_SESSION['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token'];
+}
+
+function WoCanLogin(mysqli $conn): bool
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $window = time() - 900; // 15 minutes
+    $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as cnt FROM Wo_Bad_Login WHERE ip = ? AND time > ?");
+    if (!$stmt) {
+        return true;
+    }
+    mysqli_stmt_bind_param($stmt, "si", $ip, $window);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return ($row['cnt'] ?? 0) < 5;
+}
+
+function WoAddBadLoginLog(mysqli $conn): void
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $now = time();
+    $stmt = mysqli_prepare($conn, "INSERT INTO Wo_Bad_Login (ip, time) VALUES (?, ?)");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "si", $ip, $now);
+        mysqli_stmt_execute($stmt);
+    }
+}
+
+function Wo_DeleteBadLogins(mysqli $conn): void
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $stmt = mysqli_prepare($conn, "DELETE FROM Wo_Bad_Login WHERE ip = ?");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "s", $ip);
+        mysqli_stmt_execute($stmt);
+    }
+}

@@ -1,0 +1,138 @@
+<!-- Root wrapper — scopes all profile-specific styles -->
+<div class="page-margin profile wo_user_profile" data-page="timeline" data-id="{USER_ID}">
+
+  <!-- ===== COVER ZONE ===== -->
+  <div class="container-fluid tag_cont_fluid">
+    <div class="profile-container tag_cover_bg">
+
+      <!-- Back button (absolute top-left) -->
+      <button class="btn btn-mat btn_goback" onclick="window.history.back();">
+        <svg><!-- left-arrow icon --></svg>
+      </button>
+
+      <!-- Blurred background layer -->
+      <div class="tag_cover_sec_bg">
+        <img src="{COVER_IMAGE_URL}" alt="">
+        <div class="tag_cover_bg_grad"></div>
+      </div>
+
+      <!-- Sharp cover image -->
+      <div class="container">
+        <div class="card hovercard">
+          <div class="wow_content cardheader user-cover">
+
+            <!-- Cover upload controls (visible to owner only) -->
+            <form class="profile-cover-changer" method="post">
+              <div class="when-notedit profile_cover">
+                <span class="btn btn-file btn-mat">
+                  <svg><!-- camera icon --></svg> Cover
+                  <input type="file" name="cover" accept="image/x-png, image/jpeg">
+                </span>
+                <span class="btn btn-file btn-mat btn-sm tag_prof_repos_hide"
+                      title="Drag to reposition">
+                  <svg><!-- reposition icon --></svg>
+                </span>
+              </div>
+              <div class="when-edit" style="display:none;">
+                <span class="btn btn-file btn-mat btn-sm"><!-- save --></span>
+                <span class="btn btn-file btn-mat btn-sm"><!-- cancel --></span>
+              </div>
+            </form>
+
+            <!-- Cover reposition container -->
+            <div class="tag_usr_prof_covr">
+              <div class="user-cover-reposition-container">
+                <div class="user-cover-reposition-w">
+                  <img id="cover-image" src="{COVER_IMAGE_URL}" alt="{USER_NAME}" class="pointer"/>
+                </div>
+                <div class="user-reposition-container">
+                  <img id="full-image" src="{COVER_FULL_URL}" alt=""/>
+                  <div class="user-reposition-dragable-container">
+                    <svg><!-- info icon --></svg> Drag to reposition
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NAME + AVATAR BAR ===== -->
+  <div class="container">
+    <div class="wow_content p15 tag_page_name_hdr">
+      <div class="event-info-cont-small">
+
+        <!-- Avatar (absolute-positioned, overlaps cover) -->
+        <div class="user-avatar flip {STORY_CLASS}">
+          <div class="user-avatar-uploading-container">
+            <div class="pace-activity-parent"><div class="pace-activity"></div></div>
+          </div>
+          <img src="{AVATAR_URL}" alt="{USER_NAME}" class="pointer"/>
+          <form class="profile-avatar-changer" method="post">
+            <div class="dropdown">
+              <span class="btn btn-file btn-mat" data-toggle="dropdown">
+                <svg><!-- camera icon --></svg>
+              </span>
+              <ul class="dropdown-menu tag_create_menu" role="menu">
+                <li><a class="btn-file pointer">Upload photo <input type="file"></a></li>
+                <li><a class="pointer">Crop avatar</a></li>
+              </ul>
+            </div>
+          </form>
+        </div>
+
+        <!-- User name + badges -->
+        <h3>
+          {USER_NAME}
+          <span class="verified-color"><svg><!-- checkmark --></svg></span>
+          <span class="pro-badge" style="background-color:{PRO_COLOR}">
+            <a href="/go-pro">PRO</a>
+          </span>
+        </h3>
+        <div class="event_cdown">@{USERNAME}</div>
+
+        <!-- Social links row -->
+        <div class="valign social-links">
+          <a href="#" target="_blank"><svg fill="#1da1f2" width="22" height="22"><!-- twitter --></svg></a>
+          <a href="#" target="_blank"><svg fill="#4267b2" width="22" height="22"><!-- facebook --></svg></a>
+        </div>
+
+      </div>
+
+      <!-- ===== ACTION BUTTONS ===== -->
+      <div class="valign wow_user_page_btns">
+        <a class="btn btn-default btn-mat tag_user_notif" href="/{USERNAME}/Gift"><svg><!-- gift --></svg></a>
+        <span class="user-follow-button"><!-- notification bell --></span>
+        <span class="user-follow-button group-join-btn"><!-- message --></span>
+        <span class="user-follow-button group-join-btn"><!-- follow/unfollow --></span>
+        <a class="btn btn-default btn-mat" href="/setting/{USERNAME}/general-setting">
+          <svg><!-- edit --></svg> Edit
+        </a>
+      </div>
+
+      <!-- ===== TAB NAVIGATION ===== -->
+      <div class="user-bottom-nav">
+        <ul>
+          <li><a href="/{USERNAME}">Timeline</a></li>
+          <li><a href="/{USERNAME}/groups">Groups</a></li>
+          <li><a href="/{USERNAME}/likes">Likes</a></li>
+          <li><a href="/{USERNAME}/followers">Tribe <span>{COUNT}</span></a></li>
+          <li><a href="/{USERNAME}/photos">Photos</a></li>
+          <li><a href="/{USERNAME}/videos">Videos</a></li>
+          <li><a href="/{USERNAME}/products">Products</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONTENT AREA ===== -->
+  <div class="container">
+    <div class="row">
+      <!-- col-md-8: posts feed or sub-view -->
+      <!-- col-md-4: sidebar widgets -->
+    </div>
+  </div>
+</div>

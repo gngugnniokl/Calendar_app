@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribbbal - Social Feed</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+
+    <nav class="top-nav">
+        <div class="nav-left">
+            <i class="fa-solid fa-bars menu-icon"></i>
+            <div class="logo">
+                <span class="logo-red">tri</span>BBBbal
+            </div>
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search for people, pages, groups and #hashtags">
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn"><i class="fa-regular fa-eye"></i></button>
+            <button class="icon-btn"><i class="fa-solid fa-user-group"></i></button>
+            <button class="icon-btn badge-btn"><i class="fa-regular fa-message"></i><span class="badge">1</span></button>
+            <button class="icon-btn badge-btn"><i class="fa-regular fa-bell"></i><span class="badge">2</span></button>
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/32" alt="DavidMoses Avatar" class="avatar">
+                <span class="username">DavidMoses</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-layout">
+        
+        <aside class="left-sidebar">
+            <ul class="app-icons">
+                <li class="active"><div class="icon-circle bg-orange"><i class="fa-solid fa-house"></i></div></li>
+                <li><div class="icon-circle bg-green"><i class="fa-solid fa-copy"></i></div></li>
+                <li><div class="icon-circle bg-blue"><i class="fa-solid fa-users"></i></div></li>
+                <li><div class="icon-circle bg-yellow"><i class="fa-solid fa-flag"></i></div></li>
+                <li><div class="icon-circle bg-pink"><i class="fa-solid fa-circle-question"></i></div></li>
+                <li><div class="icon-circle bg-red"><i class="fa-solid fa-bookmark"></i></div></li>
+                <li><div class="icon-circle bg-cyan"><i class="fa-solid fa-wallet"></i></div></li>
+                <li><div class="icon-circle bg-teal"><i class="fa-solid fa-bag-shopping"></i></div></li>
+                <li><div class="icon-circle bg-purple"><i class="fa-regular fa-calendar-days"></i></div></li>
+                <li><div class="icon-circle bg-light-green"><i class="fa-solid fa-music"></i></div></li>
+                <li><div class="icon-circle bg-gray"><i class="fa-solid fa-ellipsis"></i></div></li>
+            </ul>
+            <button class="floating-edit-btn"><i class="fa-solid fa-pen"></i></button>
+        </aside>
+
+        <main class="feed-content">
+            <div class="content-filters">
+                <button class="filter-btn"><i class="fa-solid fa-sliders"></i></button>
+                <button class="filter-btn active"><i class="fa-solid fa-layer-group"></i> All</button>
+                <button class="filter-btn"><i class="fa-solid fa-align-left"></i> Text</button>
+                <button class="filter-btn"><i class="fa-regular fa-image"></i> Photos</button>
+                <button class="filter-btn"><i class="fa-solid fa-video"></i> Videos</button>
+                <button class="filter-btn"><i class="fa-solid fa-music"></i> Sounds</button>
+                <button class="filter-btn"><i class="fa-regular fa-file"></i> Files</button>
+                <button class="filter-btn"><i class="fa-solid fa-map"></i> Maps</button>
+                <button class="filter-btn dropdown">Top <i class="fa-solid fa-caret-down"></i></button>
+            </div>
+
+            <div class="create-post card">
+                <img src="https://via.placeholder.com/40" alt="User" class="avatar">
+                <div class="post-input-wrapper">
+                    <input type="text" placeholder="What's on your royal mind? #Hashtag.. @Mention.. Link..">
+                </div>
+                <button class="action-icon bg-red"><i class="fa-solid fa-video"></i></button>
+                <button class="action-icon bg-green"><i class="fa-solid fa-camera"></i></button>
+            </div>
+
+            <article class="post card">
+                <header class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="triBBBal 2020" class="avatar">
+                    <div class="post-meta">
+                        <div class="post-author"><strong>triBBBbal 2020</strong> <i class="fa-solid fa-circle-check verified"></i> created new event</div>
+                        <div class="post-time">32 m</div>
+                    </div>
+                    <button class="more-options"><i class="fa-solid fa-chevron-down"></i></button>
+                </header>
+
+                <div class="post-body">
+                    <div class="event-banner">
+                        <div class="banner-content">
+                            <h2>The<br>Bookaholic<br>Meet<span class="red-text">UP</span></h2>
+                            <div class="banner-date-badge">
+                                <span>Jul</span>
+                                <strong>19</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-title">The Bookaholic Meet</div>
+                        <div class="event-location">Cafe One Yaba</div>
+                    </div>
+                </div>
+
+                <footer class="post-actions">
+                    <button class="action-btn active"><i class="fa-solid fa-heart"></i> Like</button>
+                    <button class="action-btn"><i class="fa-regular fa-comment"></i> Comment</button>
+                    <button class="action-btn share"><i class="fa-solid fa-share-nodes"></i></button>
+                </footer>
+                <div class="post-stats">
+                    <span class="likes"><i class="fa-solid fa-heart red-text"></i> 1</span>
+                </div>
+            </article>
+        </main>
+
+        <aside class="right-widgets">
+            
+            <section class="widget card">
+                <h3 class="widget-title">Trending !</h3>
+                <ul class="trending-list">
+                    <li><a href="#">#afrobeats</a></li>
+                    <li><a href="#">#music</a></li>
+                    <li><a href="#">#experimentation</a></li>
+                    <li><a href="#">#personalbranding</a></li>
+                </ul>
+            </section>
+
+            <section class="widget card">
+                <div class="widget-header">
+                    <h3 class="widget-title">Pages you may like</h3>
+                    <a href="#" class="refresh-link">Refresh</a>
+                </div>
+                <div class="page-suggestion">
+                    <div class="suggestion-cover" style="background: #333;"></div>
+                    <div class="suggestion-info">
+                        <img src="https://via.placeholder.com/32" alt="Godeye Fotography" class="avatar">
+                        <div class="suggestion-details">
+                            <div class="suggestion-name">Godeye Fotography <i class="fa-solid fa-circle-check verified"></i></div>
+                            <button class="like-btn"><i class="fa-solid fa-thumbs-up"></i> Like</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="widget card">
+                <div class="widget-header">
+                    <h3 class="widget-title">Suggested groups</h3>
+                    <a href="#" class="refresh-link">Refresh</a>
+                </div>
+                <div class="group-suggestion">
+                     <div class="suggestion-cover" style="background: #333;"></div>
+                     <div class="group-info">
+                         <div class="group-name">ACCOUNTANTS ALLIANCE & MENTORSHIP</div>
+                         <div class="group-members">1 Members</div>
+                     </div>
+                </div>
+            </section>
+
+        </aside>
+
+        <aside class="chat-sidebar">
+            <button class="chat-icon"><i class="fa-regular fa-comment-dots"></i></button>
+            <div class="chat-list">
+                <div class="chat-avatar"><img src="https://via.placeholder.com/36" alt="User"></div>
+                <div class="chat-avatar"><img src="https://via.placeholder.com/36" alt="User"><span class="status online"></span></div>
+                <div class="chat-avatar"><img src="https://via.placeholder.com/36" alt="User"></div>
+                <div class="chat-avatar"><img src="https://via.placeholder.com/36" alt="User"><span class="badge">1</span></div>
+                </div>
+            <button class="floating-add-btn"><i class="fa-solid fa-plus"></i></button>
+        </aside>
+
+    </div>
+</body>
+</html>

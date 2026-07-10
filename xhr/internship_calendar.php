@@ -5,9 +5,14 @@ ALTER TABLE calendar_events
 ADD completed TINYINT(1) NOT NULL DEFAULT 0;
 */
 
-require_once '../config/database.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../assets/init.php';
 header('Content-Type: application/json');
+
+// Auth guard
+if (!Wo_IsLogged($conn)) {
+    echo json_encode(['success' => false, 'message' => 'Authentication required.']);
+    exit();
+}
 
 function respond($success, $message = '', $data = null)
 {

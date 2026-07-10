@@ -9,10 +9,6 @@ declare(strict_types=1);
 
 $page_title = 'Home';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
-
-$wo = [];
 $wo['page_title']   = $page_title;
 $wo['weeks']        = Wo_GetInternshipCalendarWeeks($conn);
 $wo['current_week'] = Wo_GetCurrentInternshipWeek($conn);
