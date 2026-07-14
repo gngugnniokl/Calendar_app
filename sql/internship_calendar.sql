@@ -4,6 +4,8 @@
 CREATE DATABASE IF NOT EXISTS internship_calendar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE internship_calendar;
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- -----------------------------------------------------------------
 -- Wo_Users (extended with auth columns)
 -- -----------------------------------------------------------------
@@ -146,3 +148,5 @@ INSERT INTO Wo_Config (name, value) VALUES
 ('site_url', 'http://localhost:6060'),
 ('maintenance_mode', '0'),
 ('remember_device', '0');
+
+SET FOREIGN_KEY_CHECKS = 1;
