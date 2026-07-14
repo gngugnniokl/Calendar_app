@@ -85,6 +85,7 @@
                 <button class="btn btn-ghost tag_user_notif"><i class="fa-regular fa-bell"></i></button>
                 <button class="btn btn-ghost"><i class="fa-regular fa-envelope"></i> Message</button>
                 <button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Follow</button>
+                <?php if (file_exists(__DIR__ . '/nudge-button.phtml')) include __DIR__ . '/nudge-button.phtml'; ?>
                 <button class="btn btn-ghost" title="Settings"><i class="fa-solid fa-ellipsis"></i></button>
             </div>
 
