@@ -1,0 +1,24 @@
+<?php if (
+    isset($wo['user']['user_id']) &&
+    isset($profile['user_id']) &&
+    (int)$wo['user']['user_id'] !== (int)$profile['user_id']
+): ?>
+    <button class="btn btn-ghost nudge-btn" id="nudge-btn"
+            onclick="sendNudge(<?php echo (int)$profile['user_id']; ?>)">
+        <i class="fa-solid fa-hand-point-right"></i> Nudge
+    </button>
+
+    <script>
+    function sendNudge(receiverId) {
+        var btn = document.getElementById('nudge-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Nudged';
+        btn.classList.add('nudged');
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '?link1=_&f=nudge', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send('s=send_nudge&receiver_id=' + receiverId);
+    }
+    </script>
+<?php endif; ?>
