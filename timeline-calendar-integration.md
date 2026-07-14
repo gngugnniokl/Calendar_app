@@ -243,7 +243,7 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
 }
 ```
 
-One prepared statement. One loop. Three buckets + stats.
+One loop. Prefer one prepared statement for the main query (week stats may use a second prepared statement).
 
 ### Step 3 — Update `sources/timeline.php`
 
