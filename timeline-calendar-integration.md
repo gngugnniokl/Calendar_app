@@ -221,7 +221,8 @@ ALTER TABLE calendar_events ADD COLUMN user_id INT DEFAULT NULL AFTER id;
 
 Events with `user_id = NULL` are programme-wide (visible on every user's timeline).
 
-### Step 2 — Create a helper function in `includes/timeline_calendar.php` (new file)
+### Step 2 — Create a helper function in `includes/timeline_calendar.php` (new file)
+
 
 ```php
 /**
@@ -302,7 +303,7 @@ Add a mobile breakpoint inside the existing `@media (max-width: 600px)` block:
 - **No JavaScript** — pure server-rendered HTML/CSS
 - **No external libraries** — use what's already in the project
 - Reuse `format_date()`, `is_today()`, and `clean()` from `functions.php`
-- Reuse `.badge-live` for the "Today" indicator (already exists in the CSS)
+- Prefer **one prepared statement** for the main event list query; if week stats require a second query, keep it prepared and inexpensive
 - Keep the SQL to **one prepared statement** in the new function
 - Limit upcoming events to **5 rows**
 - Use only existing design tokens from `:root` — no new colours or fonts
