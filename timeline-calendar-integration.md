@@ -243,7 +243,8 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
 }
 ```
 
-One loop. Prefer one prepared statement for the main query (week stats may use a second prepared statement).
+One loop. Prefer one prepared statement for the main query (week stats may use a second prepared statement).
+
 
 ### Step 3 — Update `sources/timeline.php`
 
@@ -287,7 +288,7 @@ Add a mobile breakpoint inside the existing `@media (max-width: 600px)` block:
 
 | File | Change |
 |------|--------|
-| `sql/internship_calendar.sql` | Add `user_id` column to `calendar_events` |
+| `includes/timeline_calendar.php` | Add `Wo_GetUserTimelineEvents()` |
 | `includes/functions.php` | Add `Wo_GetUserTimelineEvents()` |
 | `sources/timeline.php` | Call new function, pass result to `$wo['timeline_events']` |
 | `themes/wondertag/layout/timeline/content.phtml` | Insert `.tl-section` block between tab nav and filters |
