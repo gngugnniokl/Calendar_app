@@ -3,13 +3,11 @@
 ## Quick Start
 
 ```bash
-# 1. Import the database
-mysql -u codewave -p internship_calendar < sql/internship_calendar.sql
+# 1. Run the automated setup script
+# This will check dependencies, setup .env.local, and run DB migrations
+./setup.sh
 
-# 2. Copy environment config
-cp .env.example .env.local   # then edit DB creds if needed
-
-# 3. Start the dev server
+# 2. Start the dev server
 php -S localhost:6060
 ```
 
