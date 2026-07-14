@@ -7,9 +7,6 @@ declare(strict_types=1);
  * No inline HTML, no raw SQL.
  */
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
-
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($id <= 0) {
@@ -22,7 +19,6 @@ if (!$event) {
     redirect('index.php?link1=internship_calendar');
 }
 
-$wo = [];
 $wo['page_title'] = $event['title'];
 $wo['event']      = $event;
 

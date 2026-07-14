@@ -10,12 +10,8 @@ declare(strict_types=1);
 
 $page_title = 'Dashboard';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
-
 $stats = Wo_GetInternshipCalendarStats($conn);
 
-$wo = [];
 $wo['page_title']       = $page_title;
 $wo['total_weeks']      = $stats['total_weeks'];
 $wo['total_days']       = $stats['total_days'];
