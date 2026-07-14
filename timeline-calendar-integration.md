@@ -221,7 +221,7 @@ ALTER TABLE calendar_events ADD COLUMN user_id INT DEFAULT NULL AFTER id;
 
 Events with `user_id = NULL` are programme-wide (visible on every user's timeline).
 
-### Step 2 — Create a helper function in `includes/functions.php`
+### Step 2 — Create a helper function in `includes/timeline_calendar.php` (new file)
 
 ```php
 /**
@@ -288,7 +288,8 @@ Add a mobile breakpoint inside the existing `@media (max-width: 600px)` block:
 
 | File | Change |
 |------|--------|
-| `includes/timeline_calendar.php` | Add `Wo_GetUserTimelineEvents()` |
+| `includes/timeline_calendar.php` | Add `Wo_GetUserTimelineEvents()` |
+
 | `includes/functions.php` | Add `Wo_GetUserTimelineEvents()` |
 | `sources/timeline.php` | Call new function, pass result to `$wo['timeline_events']` |
 | `themes/wondertag/layout/timeline/content.phtml` | Insert `.tl-section` block between tab nav and filters |
