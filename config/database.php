@@ -39,18 +39,30 @@ function get_db_connection(): mysqli
     $pass = getenv('DB_PASS') ?: '';
     $name = getenv('DB_NAME') ?: 'internship_calendar';
 
-    // Don't let mysqli_connect() throw a warning with credentials in it.
-    $conn = @mysqli_connect($host, $user, $pass, $name);
+    // Try configured credentials first, then common local fallback.
+    $attempts = [
+        ['host' => $host, 'user' => $user, 'pass' => $pass, 'name' => $name],
+    ];
 
-    if (!$conn) {
-        // Log the real reason for developers, but never echo it to the page.
-        error_log('DB connection failed: ' . mysqli_connect_error());
-        throw new RuntimeException('Database connection failed.');
+    if ($user !== 'root' || $pass !== '') {
+        $attempts[] = ['host' => 'localhost', 'user' => 'root', 'pass' => '', 'name' => $name];
     }
 
-    mysqli_set_charset($conn, 'utf8mb4');
+    mysqli_report(MYSQLI_REPORT_OFF);
+    $lastError = 'Unknown connection error.';
 
-    return $conn;
+    foreach ($attempts as $attempt) {
+        $conn = @mysqli_connect($attempt['host'], $attempt['user'], $attempt['pass'], $attempt['name']);
+        if ($conn) {
+            mysqli_set_charset($conn, 'utf8mb4');
+            return $conn;
+        }
+        $lastError = mysqli_connect_error();
+    }
+
+    // Log the real reason for developers, but never echo it to the page.
+    error_log('DB connection failed: ' . $lastError);
+    throw new RuntimeException('Database connection failed.');
 }
 
 // Backward-compatible global — existing code across the app (and Dev B's
