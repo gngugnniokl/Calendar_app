@@ -84,16 +84,18 @@ All schema changes for both features. No PHP. No frontend.
 
 ## Tasks
 
-### 1. Add `user_id` column to `calendar_events`
+### 1. Add `user_id` and `is_completed` columns to `calendar_events`
 
 ```sql
 ALTER TABLE calendar_events ADD COLUMN user_id INT DEFAULT NULL AFTER id;
+ALTER TABLE calendar_events ADD COLUMN is_completed TINYINT(1) NOT NULL DEFAULT 0 AFTER event_date;
 CREATE INDEX idx_calendar_events_user ON calendar_events(user_id);
 CREATE INDEX idx_calendar_events_date ON calendar_events(event_date);
 ```
 
 - `user_id = NULL` means "programme-wide" — visible on every user's timeline
 - `user_id = N` means assigned to that specific user only
+- `is_completed` explicitly tracks progress instead of relying on past dates
 
 ### 2. Create `calendar_nudges` table
 
@@ -114,16 +116,15 @@ CREATE TABLE calendar_nudges (
 
 ### 3. Update the seed INSERT statements
 
-Update the existing `INSERT INTO calendar_events` to include `user_id`:
+Update the existing `INSERT INTO calendar_events` to include `user_id` and `is_completed`:
 
 ```sql
-INSERT INTO calendar_events (user_id, week, day, title, description, event_date) VALUES
-(NULL, 1, 'Monday',    'Day 1 — Welcome',      'Setup Environment',              '2026-07-06'),
-(NULL, 1, 'Tuesday',   'Day 2 — PHP Basics',   'Variables, Arrays, Loops',       '2026-07-07'),
-(NULL, 1, 'Wednesday', 'Day 3 — MySQL Basics',  'SELECT, INSERT, UPDATE, DELETE', '2026-07-08'),
-(NULL, 1, 'Thursday',  'Day 4 — Advanced PHP',  'Functions, Classes, Namespaces', '2026-07-09'),
-(NULL, 1, 'Friday',    'Day 5 — Mini Project',  'Build a CRUD app',              '2026-07-10');
-
+INSERT INTO calendar_events (user_id, week, day, title, description, event_date, is_completed) VALUES
+(NULL, 1, 'Monday',    'Day 1 — Welcome',      'Setup Environment',              '2026-07-06', 1),
+(NULL, 1, 'Tuesday',   'Day 2 — PHP Basics',   'Variables, Arrays, Loops',       '2026-07-07', 1),
+(NULL, 1, 'Wednesday', 'Day 3 — MySQL Basics',  'SELECT, INSERT, UPDATE, DELETE', '2026-07-08', 0),
+(NULL, 1, 'Thursday',  'Day 4 — Advanced PHP',  'Functions, Classes, Namespaces', '2026-07-09', 0),
+(NULL, 1, 'Friday',    'Day 5 — Mini Project',  'Build a CRUD app',              '2026-07-10', 0);
 ```
 
 `NULL` = programme-wide events visible on all timelines.
@@ -138,7 +139,7 @@ sql/internship_calendar.sql
 
 After this migration runs, other devs can rely on:
 
-- `calendar_events` has columns: `id, user_id, week, day, title, description, event_date`
+- `calendar_events` has columns: `id, user_id, week, day, title, description, event_date, is_completed`
 - `calendar_nudges` has columns: `id, sender_id, receiver_id, created_at`
 - The UNIQUE constraint on `(sender_id, receiver_id)` means INSERT will fail on duplicates — backend devs should use `INSERT IGNORE` or check-before-insert
 
@@ -196,7 +197,7 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
 
     // Fetch events for this user OR programme-wide (user_id IS NULL)
     $stmt = mysqli_prepare($conn,
-        "SELECT id, week, day, title, description, event_date
+        "SELECT id, week, day, title, description, event_date, is_completed
          FROM calendar_events
          WHERE user_id = ? OR user_id IS NULL
          ORDER BY event_date ASC"
@@ -211,8 +212,9 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
 
     while ($row = mysqli_fetch_assoc($res)) {
         $event_date = $row['event_date'];
+        $is_completed = (int) $row['is_completed'];
 
-        if ($event_date < $today) {
+        if ($is_completed === 1) {
             $result['completed'][] = $row;
         } elseif ($event_date === $today) {
             $result['today'][] = $row;
@@ -239,12 +241,12 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
     // Count stats for current week
     $stmt2 = mysqli_prepare($conn,
         "SELECT COUNT(*) AS total,
-                SUM(CASE WHEN event_date < ? THEN 1 ELSE 0 END) AS done
+                SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) AS done
          FROM calendar_events
          WHERE (user_id = ? OR user_id IS NULL)
            AND week = ?"
     );
-    mysqli_stmt_bind_param($stmt2, 'sii', $today, $user_id, $current_week);
+    mysqli_stmt_bind_param($stmt2, 'ii', $user_id, $current_week);
     mysqli_stmt_execute($stmt2);
     $stats = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt2));
     mysqli_stmt_close($stmt2);
@@ -813,28 +815,16 @@ function Wo_SendNudge(mysqli $conn, int $sender, int $receiver): bool
         return false;
     }
 
-    // Check if nudge already exists (enforced by UNIQUE constraint too)
+    // Rely on UNIQUE constraint (sender_id, receiver_id) to prevent duplicates atomically
     $stmt = mysqli_prepare($conn,
-        "SELECT id FROM calendar_nudges WHERE sender_id = ? AND receiver_id = ? LIMIT 1"
+        "INSERT IGNORE INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
     );
     mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $exists = mysqli_fetch_assoc($result);
+    $inserted = mysqli_stmt_affected_rows($stmt) > 0;
     mysqli_stmt_close($stmt);
 
-    if ($exists) {
-        return false; // Already nudged
-    }
-
-    $stmt = mysqli_prepare($conn,
-        "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
-    );
-    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
-    $ok = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-
-    return $ok;
+    return $inserted;
 }
 
 /**
@@ -874,9 +864,9 @@ function Wo_NudgeBack(mysqli $conn, int $nudge_id, int $me, int $original_sender
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // Insert the nudge back
+        // Insert the nudge back atomically
         $stmt = mysqli_prepare($conn,
-            "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
+            "INSERT IGNORE INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
         );
         mysqli_stmt_bind_param($stmt, 'ii', $me, $original_sender);
         mysqli_stmt_execute($stmt);
@@ -1007,16 +997,16 @@ $protected_pages = [
 ];
 ```
 
-### 5. Create root `.htaccess` (if it doesn't exist) or add rewrite rule
+### 5. Add rewrite rule to `.htaccess` (OPTIONAL)
 
-If a root `.htaccess` doesn't exist yet, create one. If one exists, add this rule:
+**Note:** If the project already handles routing entirely through `index.php?link1=nudges` without clean URLs (which seems to be the case), **you do not need to add this rule or modifying `.htaccess`**. The page will already securely work via `?link1=nudges`. Skip this step unless you are specifically tasked with enabling clean URLs like `/nudges`.
+
+If clean URLs are required, add this rule to the existing root `.htaccess`:
 
 ```apache
 RewriteEngine On
 RewriteRule ^nudges(/?|)$  index.php?link1=nudges [QSA,L]
 ```
-
-**Note:** Check if the project already uses query-string routing (`?link1=nudges`) without pretty URLs. If so, the `.htaccess` rule is optional — the page will already work via `?link1=nudges`. Only add the rewrite if you want `/nudges` to work as a clean URL.
 
 ## Files
 
@@ -1077,13 +1067,31 @@ This partial is `include`'d by Dev 3 inside the action buttons row.
     <script>
     function sendNudge(receiverId) {
         var btn = document.getElementById('nudge-btn');
+        var originalText = btn.innerHTML;
+
+        // Optimistic disable, but wait for response to update visual success state
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Nudged';
-        btn.classList.add('nudged');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '?link1=_&f=nudge', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            var res = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && res.success) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Nudged';
+                btn.classList.add('nudged');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                alert(res.message || 'Failed to send nudge. Please try again.');
+            }
+        };
+        xhr.onerror = function() {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            alert('A network error occurred. Please try again.');
+        };
         xhr.send('s=send_nudge&receiver_id=' + receiverId);
     }
     </script>
@@ -1126,16 +1134,32 @@ This partial is `include`'d by Dev 3 inside the action buttons row.
 
     <script>
     function nudgeBack(nudgeId, senderId, btn) {
+        var originalText = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Sent';
-        btn.classList.add('nudged');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
 
         var row = document.getElementById('nudge-' + nudgeId);
-        row.style.opacity = '0.5';
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '?link1=_&f=nudge', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            var res = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && res.success) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Sent';
+                btn.classList.add('nudged');
+                row.style.opacity = '0.5';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                alert(res.message || 'Failed to send nudge back. Please try again.');
+            }
+        };
+        xhr.onerror = function() {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            alert('A network error occurred. Please try again.');
+        };
         xhr.send('s=nudge_back&nudge_id=' + nudgeId + '&sender_id=' + senderId);
     }
     </script>
