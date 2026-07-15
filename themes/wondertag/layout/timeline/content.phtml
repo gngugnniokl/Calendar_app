@@ -85,6 +85,7 @@
                 <button class="btn btn-ghost tag_user_notif"><i class="fa-regular fa-bell"></i></button>
                 <button class="btn btn-ghost"><i class="fa-regular fa-envelope"></i> Message</button>
                 <button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Follow</button>
+                <?php if (file_exists(__DIR__ . '/nudge-button.phtml')) include __DIR__ . '/nudge-button.phtml'; ?>
                 <button class="btn btn-ghost" title="Settings"><i class="fa-solid fa-ellipsis"></i></button>
             </div>
 
@@ -99,6 +100,77 @@
                     <li><a href="#">Videos</a></li>
                 </ul>
             </nav>
+        </section>
+
+        <!-- ===== CALENDAR TIMELINE STRIP ===== -->
+        <section class="tl-section" style="margin: 20px 40px 0 40px;">
+            <?php
+                $tl = $wo['timeline_events'] ?? [];
+                $tl_all = array_merge($tl['completed'] ?? [], $tl['today'] ?? [], $tl['upcoming'] ?? []);
+            ?>
+            <?php if (!empty($tl_all)): ?>
+                <div class="tl-progress">
+                    <div class="tl-progress-label">
+                        <span class="tl-progress-week">Week <?php echo (int)($tl['week'] ?? 1); ?></span>
+                        <span class="tl-progress-stat"><?php echo (int)($tl['done_this_week'] ?? 0); ?> / <?php echo (int)($tl['total_this_week'] ?? 0); ?> days done</span>
+                    </div>
+                    <div class="tl-progress-bar">
+                        <?php
+                            $total = (int)($tl['total_this_week'] ?? 0);
+                            $done  = (int)($tl['done_this_week'] ?? 0);
+                            $pct   = $total > 0 ? round(($done / $total) * 100) : 0;
+                        ?>
+                        <div class="tl-progress-fill" style="width: <?php echo $pct; ?>%"></div>
+                    </div>
+                </div>
+
+                <div class="tl-strip">
+                    <?php foreach ($tl['completed'] ?? [] as $ev): ?>
+                        <div class="tl-strip-item tl-completed">
+                            <div class="tl-strip-dot"><i class="fa-solid fa-check"></i></div>
+                            <div class="tl-strip-body">
+                                <div class="tl-strip-head">
+                                    <h4><?php echo htmlspecialchars($ev['title']); ?></h4>
+                                    <span class="tl-strip-date"><?php echo format_date($ev['event_date'], 'D, M j'); ?></span>
+                                </div>
+                                <p><?php echo htmlspecialchars($ev['description'] ?? ''); ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <?php foreach ($tl['today'] ?? [] as $ev): ?>
+                        <div class="tl-strip-item tl-today">
+                            <div class="tl-strip-dot"><i class="fa-solid fa-circle"></i></div>
+                            <div class="tl-strip-body">
+                                <div class="tl-strip-head">
+                                    <h4><?php echo htmlspecialchars($ev['title']); ?></h4>
+                                    <span class="tl-strip-date"><?php echo format_date($ev['event_date'], 'D, M j'); ?></span>
+                                </div>
+                                <p><?php echo htmlspecialchars($ev['description'] ?? ''); ?></p>
+                                <span class="badge-live">Today</span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <?php foreach ($tl['upcoming'] ?? [] as $ev): ?>
+                        <div class="tl-strip-item tl-upcoming">
+                            <div class="tl-strip-dot"><i class="fa-regular fa-circle"></i></div>
+                            <div class="tl-strip-body">
+                                <div class="tl-strip-head">
+                                    <h4><?php echo htmlspecialchars($ev['title']); ?></h4>
+                                    <span class="tl-strip-date"><?php echo format_date($ev['event_date'], 'D, M j'); ?></span>
+                                </div>
+                                <p><?php echo htmlspecialchars($ev['description'] ?? ''); ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="tl-strip-empty" style="text-align: center; color: var(--muted); padding: 40px;">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+                    <p>No schedule yet.</p>
+                </div>
+            <?php endif; ?>
         </section>
 
         <!-- Filters -->
