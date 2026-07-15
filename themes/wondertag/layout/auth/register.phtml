@@ -1,0 +1,160 @@
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <span class="brand-mark"></span>
+            <h1 class="auth-title">Tribbbal Internship</h1>
+            <p class="auth-subtitle">Create your account</p>
+        </div>
+
+        <div id="auth-error" class="auth-error" style="display:none;"></div>
+
+        <form id="register-form" class="auth-form" autocomplete="on">
+            <input type="hidden" name="csrf_token" value="<?php echo $wo['csrf_token'] ?? ''; ?>">
+
+            <div class="form-row">
+                <div class="form-group form-group-half">
+                    <label for="reg-first-name">First Name <span class="required">*</span></label>
+                    <input type="text" id="reg-first-name" name="first_name" class="form-control"
+                           placeholder="First name" required autocomplete="given-name">
+                </div>
+                <div class="form-group form-group-half">
+                    <label for="reg-last-name">Last Name</label>
+                    <input type="text" id="reg-last-name" name="last_name" class="form-control"
+                           placeholder="Last name" autocomplete="family-name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-username">Username <span class="required">*</span></label>
+                <div class="input-icon-wrap">
+                    <i class="fa fa-at input-icon"></i>
+                    <input type="text" id="reg-username" name="username" class="form-control"
+                           placeholder="Choose a username" required autocomplete="username"
+                           pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="32">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-email">Email <span class="required">*</span></label>
+                <div class="input-icon-wrap">
+                    <i class="fa fa-envelope input-icon"></i>
+                    <input type="email" id="reg-email" name="email" class="form-control"
+                           placeholder="you@example.com" required autocomplete="email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-password">Password <span class="required">*</span></label>
+                <div class="input-icon-wrap">
+                    <i class="fa fa-lock input-icon"></i>
+                    <input type="password" id="reg-password" name="password" class="form-control"
+                           placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+                    <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-confirm">Confirm Password <span class="required">*</span></label>
+                <div class="input-icon-wrap">
+                    <i class="fa fa-lock input-icon"></i>
+                    <input type="password" id="reg-confirm" name="confirm_password" class="form-control"
+                           placeholder="Re-enter your password" required minlength="6" autocomplete="new-password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-submit">
+                <span class="btn-text">Create Account</span>
+                <span class="btn-loader" style="display:none;">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </span>
+            </button>
+
+            <div class="auth-links">
+                <a href="?link1=welcome" class="auth-link">Already have an account? <strong>Log in</strong></a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+(function() {
+    var form = document.getElementById('register-form');
+    var errorEl = document.getElementById('auth-error');
+
+    // Password toggles
+    form.querySelectorAll('.password-toggle').forEach(function(toggle) {
+        toggle.addEventListener('click', function() {
+            var inp = toggle.parentElement.querySelector('input');
+            var icon = toggle.querySelector('i');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                inp.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        errorEl.style.display = 'none';
+
+        var password = form.querySelector('#reg-password').value;
+        var confirm = form.querySelector('#reg-confirm').value;
+
+        if (password !== confirm) {
+            errorEl.textContent = 'Passwords do not match.';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        if (password.length < 6) {
+            errorEl.textContent = 'Password must be at least 6 characters.';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        var btn = form.querySelector('.auth-submit');
+        var btnText = btn.querySelector('.btn-text');
+        var btnLoader = btn.querySelector('.btn-loader');
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'inline-block';
+
+        var formData = new FormData();
+        formData.append('s', 'register');
+        formData.append('first_name', form.querySelector('#reg-first-name').value.trim());
+        formData.append('last_name', form.querySelector('#reg-last-name').value.trim());
+        formData.append('username', form.querySelector('#reg-username').value.trim());
+        formData.append('email', form.querySelector('#reg-email').value.trim());
+        formData.append('password', password);
+        formData.append('confirm_password', confirm);
+        formData.append('csrf_token', form.querySelector('[name="csrf_token"]').value);
+
+        fetch('xhr/auth.php', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.href = data.data.location || '?link1=internship_calendar';
+                } else {
+                    errorEl.textContent = data.message;
+                    errorEl.style.display = 'block';
+                }
+            })
+            .catch(function() {
+                errorEl.textContent = 'Network error. Please try again.';
+                errorEl.style.display = 'block';
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
+            });
+    });
+})();
+</script>
