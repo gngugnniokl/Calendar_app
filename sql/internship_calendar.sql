@@ -24,6 +24,24 @@ CREATE TABLE calendar_events (
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+DROP TABLE IF EXISTS calendar_nudges;
+
+CREATE TABLE calendar_nudges (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id    INT NOT NULL,
+    receiver_id  INT NOT NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_sender_receiver (sender_id, receiver_id),
+    CONSTRAINT fk_calendar_nudges_sender
+        FOREIGN KEY (sender_id) REFERENCES Wo_Users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_calendar_nudges_receiver
+        FOREIGN KEY (receiver_id) REFERENCES Wo_Users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ---------------------------------------------------------------------
 -- WEEK 1 — Fundamentals & Environment
 -- Goal: local env running, architecture understood, first visual change
