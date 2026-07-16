@@ -21,6 +21,7 @@ $protected_pages = [
     'internship_calendar_event',
     'internship_calendar_home',
     'timeline',
+    'nudges',
 ];
 
 $all_pages = array_merge($public_pages, $protected_pages);
