@@ -1607,9 +1607,7 @@ img, svg {
 .btn-sm {
     padding: 6px 14px;
     font-size: 0.82rem;
-}
-
-@media (max-width: 600px) {
+}@media (max-width: 600px) {
     .auth-card {
         padding: 28px 20px;
     }
@@ -1621,73 +1619,75 @@ img, svg {
         display: none;
     }
 }
-    position: relative;
-    height: 300px;
-    background-color: var(--paper);
-    overflow: hidden;
+
+/* ---------------------------------------------------------------------
+   16. Calendar Timeline Strip (profile page)
+   --------------------------------------------------------------------- */
+
+.tl-progress {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
 }
 
-/* Blurred background layer */
-.tag_cover_sec_bg {
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    overflow: hidden;
+.tl-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-.tag_cover_sec_bg img {
-    position: absolute;
-    top: -30px; right: -30px; bottom: -30px; left: -30px;
-    width: calc(100% + 60px);
-    height: calc(100% + 60px);
-    object-fit: cover;
-    filter: blur(20px) brightness(0.8);
-    opacity: 0.6;
+.tl-progress-week {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
 }
 
-.tag_cover_bg_grad {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 60%;
-    background: linear-gradient(transparent, rgba(0,0,0,0.4));
+.tl-progress-stat {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
 
-/* Sharp cover container */
-.tag_usr_prof_covr {
-    position: relative;
-    max-width: 1000px;
-    margin: 0 auto;
-    height: 100%;
+.tl-progress-bar {
+  height: 6px;
+  background: var(--hairline);
+  border-radius: 3px;
+  overflow: hidden;
 }
 
-.user-cover-reposition-w {
-    width: 100%;
-    height: 300px;
-    overflow: hidden;
-    position: relative;
+.tl-progress-fill {
+  height: 100%;
+  background: var(--pine);
+  border-radius: 3px;
+  transition: width 0.4s ease;
 }
 
-.user-cover-reposition-w img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* --- Timeline Strip --- */
+
+.tl-strip {
+  position: relative;
+  padding-left: 28px;
+  margin: 0 0 24px;
 }
 
-/* Header bar with Avatar overlap */
-.tag_page_name_hdr {
-    position: relative;
-    background: var(--surface);
-    border-bottom: 1px solid var(--hairline);
-    margin: 0;
-    padding: 0 40px 15px 40px !important;
+.tl-strip::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--hairline);
 }
 
-.tag_page_name_hdr .event-info-cont-small {
-    padding-left: 170px; /* Offset for avatar */
-    position: relative;
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.tl-strip-item {
+  position: relative;
+  padding: 12px 0 12px 20px;
 }
 
 .tag_page_name_hdr .user-avatar {
@@ -1703,68 +1703,172 @@ img, svg {
     z-index: 5;
 }
 
-.tag_page_name_hdr .user-avatar img {
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
-    object-fit: cover;
+.tl-strip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
 
-/* Tab Navigation */
-.user-bottom-nav {
-    margin-top: 10px;
+.tl-strip-head h4 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
 }
 
-.user-bottom-nav ul {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    gap: 30px;
+.tl-strip-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
-.user-bottom-nav ul li a {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--muted);
-    padding: 10px 0;
-    display: block;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
+.tl-strip-body p {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 4px 0 0;
 }
 
-.user-bottom-nav ul li a:hover,
-.user-bottom-nav ul li a.active {
-    color: var(--pine);
-    border-bottom-color: var(--pine);
+/* State: Completed */
+.tl-completed .tl-strip-dot {
+  background: var(--pine-tint);
+  color: var(--pine);
 }
 
-.user-bottom-nav ul li a span {
+.tl-completed .tl-strip-head h4 {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* State: Today */
+.tl-today .tl-strip-dot {
+  background: var(--brass);
+  color: #fff;
+  box-shadow: 0 0 0 4px var(--brass-tint);
+}
+
+.tl-today .tl-strip-head h4 {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* State: Upcoming */
+.tl-upcoming .tl-strip-dot {
+  background: var(--surface);
+  border: 2px solid var(--hairline);
+  color: var(--muted);
+}
+
+.tl-upcoming {
+  opacity: 0.6;
+}
+
+/* --- Empty State --- */
+.tl-strip-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 40px;
+}
+
+/* ---------------------------------------------------------------------
+   17. Nudge System
+   --------------------------------------------------------------------- */
+
+/* Nudge button (on profile) */
+.nudge-btn.nudged {
+  color: var(--pine);
+  border-color: var(--pine-tint);
+  background: var(--pine-tint);
+  pointer-events: none;
+}
+
+.nudge-btn i {
+  margin-right: 4px;
+}
+
+/* Nudge Inbox */
+.nudge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nudge-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-card);
+  transition: opacity 0.3s ease;
+}
+
+.nudge-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--hairline);
+}
+
+.nudge-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nudge-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.nudge-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nudge-name:hover {
+  color: var(--pine);
+}
+
+.nudge-time {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.nudge-back-btn.nudged {
+  color: var(--pine);
+  border-color: var(--pine-tint);
+  background: var(--pine-tint);
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .tl-section {
+    margin: 16px 16px 0 !important;
+  }
+  .tl-strip {
+    padding-left: 24px;
+  }
+  .tl-strip-dot {
+    left: -24px;
+  }
+  .nudge-item {
+    padding: 12px 16px;
+  }
+  .nudge-back-btn {
     font-size: 12px;
-    margin-left: 4px;
-    opacity: 0.7;
-}
-
-/* Action Buttons */
-.wow_user_page_btns {
-    position: absolute;
-    right: 40px;
-    top: 20px;
-    display: flex;
-    gap: 8px;
-}
-
-.tag_user_notif {
-    padding: 8px 12px;
-    border-radius: 50%;
-    background: var(--paper) !important;
-}
-
-/* Verified Badge */
-.verified-color {
-    color: #2196f3;
-    margin-left: 4px;
-    font-size: 16px;
+    padding: 6px 10px;
+  }
 }
 
 /* ---------------------------------------------------------------------

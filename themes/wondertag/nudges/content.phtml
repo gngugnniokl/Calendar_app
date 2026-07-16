@@ -1,0 +1,46 @@
+<section class="page-intro">
+    <h1 class="hero-title">Nudges</h1>
+</section>
+
+<?php if (empty($wo['nudges'])): ?>
+    <div style="text-align: center; color: var(--muted); padding: 60px 20px;">
+        <i class="fa-solid fa-hand-point-right" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+        <p>No nudges yet. When someone nudges you, it'll show up here.</p>
+    </div>
+<?php else: ?>
+    <div class="nudge-list">
+        <?php foreach ($wo['nudges'] as $nudge): ?>
+            <div class="nudge-item" id="nudge-<?php echo (int)$nudge['id']; ?>">
+                <div class="nudge-avatar">
+                    <img src="<?php echo clean($nudge['avatar']); ?>" alt="">
+                </div>
+                <div class="nudge-info">
+                    <a href="?link1=timeline&u=<?php echo clean($nudge['username']); ?>" class="nudge-name">
+                        <?php echo clean($nudge['name']); ?>
+                    </a>
+                    <span class="nudge-time"><?php echo format_date($nudge['created_at'], 'M j, g:ia'); ?></span>
+                </div>
+                <button class="btn btn-ghost nudge-back-btn"
+                        onclick="nudgeBack(<?php echo (int)$nudge['id']; ?>, <?php echo (int)$nudge['sender_id']; ?>, this)">
+                    <i class="fa-solid fa-hand-point-left"></i> Nudge Back
+                </button>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <script>
+    function nudgeBack(nudgeId, senderId, btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Sent';
+        btn.classList.add('nudged');
+
+        var row = document.getElementById('nudge-' + nudgeId);
+        row.style.opacity = '0.5';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '?link1=_&f=nudge', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send('s=nudge_back&nudge_id=' + nudgeId + '&sender_id=' + senderId);
+    }
+    </script>
+<?php endif; ?>
