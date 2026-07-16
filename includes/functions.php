@@ -539,6 +539,7 @@ function Wo_LoadPage($page_url) {
     }
     return "Template not found: " . $path;
 }
+
 /**
  * Wo_GetInternshipCalendarWeeks() — all events grouped by week number,
  * used for the overview/home page. Keyed array: [week_num => [events]].
@@ -559,6 +560,147 @@ function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
     }
 
     return $weeks;
+}
+
+/**
+ * Wo_SendNudge() — inserts a single outbound nudge if the sender and
+ * receiver are different users and the pair does not already exist.
+ *
+ * @param mysqli $conn
+ * @param int $sender
+ * @param int $receiver
+ * @return bool
+ */
+function Wo_SendNudge(mysqli $conn, int $sender, int $receiver): bool
+{
+    if ($sender <= 0 || $receiver <= 0 || $sender === $receiver) {
+        return false;
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
+    );
+
+    if (!$stmt) {
+        return false;
+    }
+
+    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
+    $success = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    return $success;
+}
+
+/**
+ * Wo_NudgeBack() — removes the incoming nudge and creates a new one in
+ * the opposite direction inside a single SQL transaction.
+ *
+ * @param mysqli $conn
+ * @param int $nudge_id
+ * @param int $me
+ * @param int $original_sender
+ * @return bool
+ */
+function Wo_NudgeBack(mysqli $conn, int $nudge_id, int $me, int $original_sender): bool
+{
+    if ($nudge_id <= 0 || $me <= 0 || $original_sender <= 0 || $me === $original_sender) {
+        return false;
+    }
+
+    mysqli_begin_transaction($conn);
+
+    try {
+        $deleteStmt = mysqli_prepare(
+            $conn,
+            "DELETE FROM calendar_nudges
+             WHERE id = ? AND sender_id = ? AND receiver_id = ?"
+        );
+
+        if (!$deleteStmt) {
+            throw new RuntimeException('Failed to prepare delete statement.');
+        }
+
+        mysqli_stmt_bind_param($deleteStmt, 'iii', $nudge_id, $original_sender, $me);
+        if (!mysqli_stmt_execute($deleteStmt) || mysqli_stmt_affected_rows($deleteStmt) < 1) {
+            mysqli_stmt_close($deleteStmt);
+            throw new RuntimeException('Incoming nudge not found.');
+        }
+        mysqli_stmt_close($deleteStmt);
+
+        $insertStmt = mysqli_prepare(
+            $conn,
+            "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
+        );
+
+        if (!$insertStmt) {
+            throw new RuntimeException('Failed to prepare insert statement.');
+        }
+
+        mysqli_stmt_bind_param($insertStmt, 'ii', $me, $original_sender);
+        if (!mysqli_stmt_execute($insertStmt)) {
+            mysqli_stmt_close($insertStmt);
+            throw new RuntimeException('Failed to insert return nudge.');
+        }
+        mysqli_stmt_close($insertStmt);
+
+        mysqli_commit($conn);
+        return true;
+    } catch (Throwable $exception) {
+        mysqli_rollback($conn);
+        return false;
+    }
+}
+
+/**
+ * Wo_GetNudgesForUser() — returns all incoming nudges with sender
+ * profile data attached.
+ *
+ * @param mysqli $conn
+ * @param int $user_id
+ * @return array<int, array<string, mixed>>
+ */
+function Wo_GetNudgesForUser(mysqli $conn, int $user_id): array
+{
+    if ($user_id <= 0) {
+        return [];
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT
+            n.id,
+            n.sender_id,
+            n.receiver_id,
+            n.created_at,
+            u.username,
+            u.name,
+            u.avatar
+         FROM calendar_nudges n
+         INNER JOIN Wo_Users u ON u.user_id = n.sender_id
+         WHERE n.receiver_id = ?
+         ORDER BY n.created_at DESC, n.id DESC"
+    );
+
+    if (!$stmt) {
+        return [];
+    }
+
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $nudges = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $nudges[] = $row;
+        }
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $nudges;
 }
 
 /**
@@ -761,6 +903,10 @@ function Wo_LastSeen(mysqli $conn, int $user_id): void
     mysqli_stmt_execute($stmt);
 }
 
+// Fixed comment structure directly here
+/**
+ * Wo_ResetPassword() — updates user's password.
+ */
 function Wo_ResetPassword(mysqli $conn, int $user_id, string $new_password): bool
 {
     $hashed = password_hash($new_password, PASSWORD_DEFAULT);
