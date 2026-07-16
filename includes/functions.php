@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once 'timeline_calendar.php';
+
 /**
  * Reusable helper functions shared across every page.
  * Each one is commented with the core PHP builtin(s) it relies on,
@@ -195,7 +197,7 @@ function Wo_GetCurrentInternshipWeek(mysqli $conn): int
  */
 function Wo_GetInternshipCalendarEventsByWeek(mysqli $conn, int $week): array
 {
-    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE week = ? ORDER BY event_date ASC");
+    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE week = ? ORDER BY e.event_date ASC");
     mysqli_stmt_bind_param($stmt, "i", $week);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -334,41 +336,47 @@ function Wo_GetInternshipCalendarEvents(mysqli $conn, array $filters = []): arra
     $from   = isset($filters['from']) ? trim((string) $filters['from']) : '';
     $to     = isset($filters['to']) ? trim((string) $filters['to']) : '';
 
-    $sql    = "SELECT * FROM calendar_events WHERE 1=1";
-    $types  = "";
-    $params = [];
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    // Select everything from calendar_events, but correctly alias 'completed' against completions tracking mapper
+    $sql    = "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed FROM calendar_events e 
+               LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+               WHERE (e.user_id = ? OR e.user_id IS NULL)";
+    $types  = "ii";
+    $params = [$user_id, $user_id];
 
     if (!empty($week)) {
-        $sql .= " AND week = ?";
+        $sql .= " AND e.week = ?";
         $types .= "i";
         $params[] = $week;
     }
 
     if ($search !== '') {
-        $sql .= " AND title LIKE ?";
+        $sql .= " AND e.title LIKE ?";
         $types .= "s";
         $params[] = "%" . $search . "%";
     }
 
     if ($day !== '') {
-        $sql .= " AND day = ?";
+        $sql .= " AND e.day = ?";
         $types .= "s";
         $params[] = $day;
     }
 
     if ($from !== '') {
-        $sql .= " AND event_date >= ?";
+        $sql .= " AND e.event_date >= ?";
         $types .= "s";
         $params[] = $from;
     }
 
     if ($to !== '') {
-        $sql .= " AND event_date <= ?";
+        $sql .= " AND e.event_date <= ?";
         $types .= "s";
         $params[] = $to;
     }
 
-    $sql .= " ORDER BY event_date ASC";
+    $sql .= " ORDER BY e.event_date ASC";
 
     $stmt = mysqli_prepare($conn, $sql);
 
@@ -396,8 +404,17 @@ function Wo_GetInternshipCalendarEvents(mysqli $conn, array $filters = []): arra
  */
 function Wo_GetInternshipCalendarStats(mysqli $conn): array
 {
-    $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
-    $result = mysqli_query($conn, $sql);
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    $stmt = mysqli_prepare($conn, "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed 
+                                  FROM calendar_events e 
+                                  LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+                                  WHERE (e.user_id = ? OR e.user_id IS NULL) 
+                                  ORDER BY e.week ASC, e.event_date ASC");
+    mysqli_stmt_bind_param($stmt, 'ii', $user_id, $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     $events = [];
     if ($result) {
@@ -453,8 +470,14 @@ function Wo_GetInternshipCalendarStats(mysqli $conn): array
  */
 function Wo_GetInternshipCalendarEventById(mysqli $conn, int $id): ?array
 {
-    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE id = ? LIMIT 1");
-    mysqli_stmt_bind_param($stmt, "i", $id);
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    $stmt = mysqli_prepare($conn, "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed 
+                                  FROM calendar_events e 
+                                  LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+                                  WHERE e.id = ? AND (e.user_id = ? OR e.user_id IS NULL) LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $id, $user_id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $row = mysqli_fetch_assoc($result);
@@ -549,8 +572,17 @@ function Wo_LoadPage($page_url) {
  */
 function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
 {
-    $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
-    $result = mysqli_query($conn, $sql);
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    $stmt = mysqli_prepare($conn, "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed 
+                                  FROM calendar_events e 
+                                  LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+                                  WHERE (e.user_id = ? OR e.user_id IS NULL) 
+                                  ORDER BY e.week ASC, e.event_date ASC");
+    mysqli_stmt_bind_param($stmt, 'ii', $user_id, $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     $weeks = [];
     if ($result) {
@@ -977,4 +1009,148 @@ function Wo_DeleteBadLogins(mysqli $conn): void
         mysqli_stmt_bind_param($stmt, "s", $ip);
         mysqli_stmt_execute($stmt);
     }
+}
+/**
+ * Wo_SendNudge() — inserts a nudge if one doesn't already exist
+ * from this sender to this receiver.
+ * Uses: mysqli_prepare()
+ */
+function Wo_SendNudge(mysqli $conn, int $sender, int $receiver): bool {
+    // Check if a nudge already exists
+    $stmt = mysqli_prepare($conn, "SELECT id FROM calendar_nudges WHERE sender_id = ? AND receiver_id = ?");
+    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_store_result($stmt);
+    if (mysqli_stmt_num_rows($stmt) > 0) {
+        mysqli_stmt_close($stmt);
+        return false; // Nudge already sent
+    }
+    mysqli_stmt_close($stmt);
+
+    // Insert new nudge
+    $stmt = mysqli_prepare($conn, "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)");
+    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+    return $result;
+}
+
+/**
+ * Wo_NudgeBack() — deletes the inbound nudge, inserts a new one
+ * in the opposite direction.
+ * Uses: mysqli_prepare(), mysqli_begin_transaction()
+ */
+function Wo_NudgeBack(mysqli $conn, int $nudge_id, int $me, int $original_sender): bool {
+    mysqli_begin_transaction($conn);
+    try {
+        // Delete inbound nudge
+        $stmtDel = mysqli_prepare($conn, "DELETE FROM calendar_nudges WHERE id = ? AND receiver_id = ?");
+        mysqli_stmt_bind_param($stmtDel, 'ii', $nudge_id, $me);
+        mysqli_stmt_execute($stmtDel);
+        $deleted_rows = mysqli_stmt_affected_rows($stmtDel);
+        mysqli_stmt_close($stmtDel);
+
+        // If the nudge didn't exist (already deleted/nudged back), don't insert a duplicate.
+        if ($deleted_rows === 0) {
+            mysqli_rollback($conn);
+            return false; 
+        }
+
+        // Send nudge back - check if a back-nudge already exists to be extra safe
+        $stmtCheck = mysqli_prepare($conn, "SELECT id FROM calendar_nudges WHERE sender_id = ? AND receiver_id = ?");
+        mysqli_stmt_bind_param($stmtCheck, 'ii', $me, $original_sender);
+        mysqli_stmt_execute($stmtCheck);
+        mysqli_stmt_store_result($stmtCheck);
+        $exists = mysqli_stmt_num_rows($stmtCheck) > 0;
+        mysqli_stmt_close($stmtCheck);
+
+        if (!$exists) {
+            $stmtIns = mysqli_prepare($conn, "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)");
+            mysqli_stmt_bind_param($stmtIns, 'ii', $me, $original_sender);
+            mysqli_stmt_execute($stmtIns);
+            mysqli_stmt_close($stmtIns);
+        }
+        
+        mysqli_commit($conn);
+        return true;
+    } catch (Exception $e) {
+        mysqli_rollback($conn);
+        return false;
+    }
+}
+
+/**
+ * Wo_GetNudgesForUser() — returns all nudges received by a user,
+ * joined with sender's name/avatar/username.
+ * Uses: mysqli_prepare()
+ */
+function Wo_GetNudgesForUser(mysqli $conn, int $user_id): array {
+    $stmt = mysqli_prepare($conn, 
+        "SELECT n.id, n.sender_id, n.created_at, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
+         FROM calendar_nudges n
+         JOIN Wo_Users u ON n.sender_id = u.user_id
+         WHERE n.receiver_id = ?
+         ORDER BY n.created_at DESC"
+    );
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $nudges = [];
+    if ($res) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            $nudges[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $nudges;
+}
+
+/**
+ * Wo_GetUserPosts() — fetches social posts for a user
+ *
+ * @param mysqli $conn
+ * @param int $user_id
+ * @return array
+ */
+function Wo_GetUserPosts(mysqli $conn, int $user_id): array {
+    $stmt = mysqli_prepare($conn, 
+        "SELECT p.id, p.postText, p.time, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
+         FROM Wo_Posts p
+         JOIN Wo_Users u ON p.user_id = u.user_id
+         WHERE p.user_id = ? AND p.active = 1
+         ORDER BY p.time DESC"
+    );
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $posts = [];
+    if ($res) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            $posts[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $posts;
+}
+
+/**
+ * Wo_GetRandomUsers() - Fetch random active users for sidebar suggestions
+ */
+function Wo_GetRandomUsers(mysqli $conn, int $current_user_id, int $limit = 5): array {
+    $stmt = mysqli_prepare($conn, "SELECT user_id, username, CONCAT(first_name, ' ', last_name) as name, avatar FROM Wo_Users WHERE active = '1' AND user_id != ? ORDER BY RAND() LIMIT ?");
+    mysqli_stmt_bind_param($stmt, 'ii', $current_user_id, $limit);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $users = [];
+    if ($res) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            // Provide fallback name if empty
+            if (trim($row['name']) === '') {
+                $row['name'] = $row['username'];
+            }
+            $users[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $users;
 }

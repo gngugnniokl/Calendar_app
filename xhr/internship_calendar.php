@@ -75,10 +75,6 @@ function validateEvent(array $data)
     if (empty($data['success_criteria'])) {
         $errors[] = 'Success criteria is required.';
     }
-    
-    if (empty($data['traps'])) {
-        $errors[] = 'Traps is required.';
-    }
 
     if (empty($data['event_date'])) {
         $errors[] = 'Date is required.';
@@ -104,9 +100,9 @@ switch ($action) {
             respond(false, 'Validation error: ' . implode(' ', $errors));
         }
 
-        $stmt = mysqli_prepare($conn, "INSERT INTO calendar_events (week, day, title, description, success_criteria, traps, event_date, completed) VALUES (?, ?, ?, ?, ?, ?, ?, 0)");
+        $stmt = mysqli_prepare($conn, "INSERT INTO calendar_events (week, day, title, description, success_criteria, traps, event_date, is_completed) VALUES (?, ?, ?, ?, ?, ?, ?, 0)");
         if (!$stmt) {
-            respond(false, 'Database error');
+            respond(false, 'Database error: ' . mysqli_error($conn));
         }
         
         mysqli_stmt_bind_param($stmt, 'issssss', $data['week'], $data['day'], $data['title'], $data['description'], $data['success_criteria'], $data['traps'], $data['event_date']);
@@ -145,7 +141,7 @@ switch ($action) {
 
         $stmt = mysqli_prepare($conn, "UPDATE calendar_events SET week = ?, day = ?, title = ?, description = ?, success_criteria = ?, traps = ?, event_date = ? WHERE id = ?");
         if (!$stmt) {
-            respond(false, 'Database error');
+            respond(false, 'Database error: ' . mysqli_error($conn));
         }
         
         mysqli_stmt_bind_param($stmt, 'issssssi', $data['week'], $data['day'], $data['title'], $data['description'], $data['success_criteria'], $data['traps'], $data['event_date'], $data['id']);
@@ -281,10 +277,14 @@ switch ($action) {
             respond(false, 'Validation error: Invalid event ID.');
         }
 
-        $checkStmt = mysqli_prepare($conn, "SELECT completed FROM calendar_events WHERE id = ?");
-        if (!$checkStmt) {
-            respond(false, 'Database error');
+        // User identity from global object
+        $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+        if ($user_id <= 0) {
+            respond(false, 'Authentication boundary error.');
         }
+
+        // Check if event exists
+        $checkStmt = mysqli_prepare($conn, "SELECT id FROM calendar_events WHERE id = ?");
         mysqli_stmt_bind_param($checkStmt, 'i', $data['id']);
         mysqli_stmt_execute($checkStmt);
         $res = mysqli_stmt_get_result($checkStmt);
@@ -292,25 +292,34 @@ switch ($action) {
             mysqli_stmt_close($checkStmt);
             respond(false, 'Validation error: Event not found');
         }
-        
-        $row = mysqli_fetch_assoc($res);
         mysqli_stmt_close($checkStmt);
-        
-        $newStatus = $row['completed'] == 1 ? 0 : 1;
 
-        $stmt = mysqli_prepare($conn, "UPDATE calendar_events SET completed = ? WHERE id = ?");
-        if (!$stmt) {
-            respond(false, 'Database error');
-        }
-        mysqli_stmt_bind_param($stmt, 'ii', $newStatus, $data['id']);
+        // Check completion status for this specific user
+        $checkCompStmt = mysqli_prepare($conn, "SELECT id FROM calendar_event_completions WHERE event_id = ? AND user_id = ?");
+        mysqli_stmt_bind_param($checkCompStmt, 'ii', $data['id'], $user_id);
+        mysqli_stmt_execute($checkCompStmt);
+        $compRes = mysqli_stmt_get_result($checkCompStmt);
         
-        if (mysqli_stmt_execute($stmt)) {
-            mysqli_stmt_close($stmt);
-            respond(true, 'Completion updated', ['completed' => $newStatus]);
+        $newStatus = 0;
+        
+        if (mysqli_num_rows($compRes) > 0) {
+            // Uncomplete
+            mysqli_stmt_close($checkCompStmt);
+            $delStmt = mysqli_prepare($conn, "DELETE FROM calendar_event_completions WHERE event_id = ? AND user_id = ?");
+            mysqli_stmt_bind_param($delStmt, 'ii', $data['id'], $user_id);
+            mysqli_stmt_execute($delStmt);
+            mysqli_stmt_close($delStmt);
         } else {
-            mysqli_stmt_close($stmt);
-            respond(false, 'Failed to toggle completion.');
+            // Complete
+            mysqli_stmt_close($checkCompStmt);
+            $insStmt = mysqli_prepare($conn, "INSERT INTO calendar_event_completions (event_id, user_id) VALUES (?, ?)");
+            mysqli_stmt_bind_param($insStmt, 'ii', $data['id'], $user_id);
+            mysqli_stmt_execute($insStmt);
+            mysqli_stmt_close($insStmt);
+            $newStatus = 1;
         }
+        
+        respond(true, 'Completion updated', ['completed' => $newStatus]);
         break;
 
     default:

@@ -35,12 +35,13 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
 
     // Fetch events for this user OR programme-wide (user_id IS NULL)
     $stmt = mysqli_prepare($conn,
-        "SELECT id, week, day, title, description, event_date, is_completed
-         FROM calendar_events
-         WHERE user_id = ? OR user_id IS NULL
-         ORDER BY event_date ASC"
+        "SELECT e.id, e.week, e.day, e.title, e.description, e.event_date, IF(c.id IS NOT NULL, 1, 0) AS is_completed
+         FROM calendar_events e
+         LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ?
+         WHERE e.user_id = ? OR e.user_id IS NULL
+         ORDER BY e.event_date ASC"
     );
-    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_bind_param($stmt, 'ii', $user_id, $user_id);
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
 
@@ -100,12 +101,13 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
     // Count stats for current week
     $stmt2 = mysqli_prepare($conn,
         "SELECT COUNT(*) AS total,
-                SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) AS done
-         FROM calendar_events
-         WHERE (user_id = ? OR user_id IS NULL)
-           AND week = ?"
+                SUM(CASE WHEN c.id IS NOT NULL THEN 1 ELSE 0 END) AS done
+         FROM calendar_events e
+         LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ?
+         WHERE (e.user_id = ? OR e.user_id IS NULL)
+           AND e.week = ?"
     );
-    mysqli_stmt_bind_param($stmt2, 'ii', $user_id, $current_week);
+    mysqli_stmt_bind_param($stmt2, 'iii', $user_id, $user_id, $current_week);
     mysqli_stmt_execute($stmt2);
     $stats = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt2));
     mysqli_stmt_close($stmt2);

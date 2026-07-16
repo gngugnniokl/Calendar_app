@@ -40,12 +40,16 @@ $wo['page_title']    = $profile['name'] ?: $profile['username'];
 $wo['user_profile']  = $profile;
 $wo['timeline_type'] = $type;
 
-// Load this user's calendar activity (events they're associated with, or all if admin/mentor)
-$wo['user_events'] = Wo_GetInternshipCalendarEvents($conn, []);
+// Load this user's social posts for the timeline feed
+$wo['user_posts'] = Wo_GetUserPosts($conn, (int) $profile['user_id']);
 
 // Calendar Timeline Strip data
 require_once __DIR__ . '/../includes/timeline_calendar.php';
 $wo['timeline_events'] = Wo_GetUserTimelineEvents($conn, (int) $profile['user_id']);
+
+// Load random active users for the sidebar suggestions/chat (excluding logged-in user)
+$current_uid = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+$wo['sidebar_users'] = Wo_GetRandomUsers($conn, $current_uid, 6);
 
 // Render
 $wo['content'] = Wo_LoadPage('timeline/content');

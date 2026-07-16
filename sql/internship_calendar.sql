@@ -47,9 +47,9 @@ CREATE TABLE Wo_Users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO Wo_Users (username, email, password, first_name, last_name, about, avatar, admin) VALUES
-('intern1', 'intern1@example.com', 'y$TvllbUox5m3YifZZlFazwO7Q5HJdNDJzp.hY6K2fMWiEWe5F6muci', 'Intern', 'One', 'First intern on the Tribbbal programme.', 'https://via.placeholder.com/150', '0'),
-('mentor',  'mentor@example.com',  'y$TvllbUox5m3YifZZlFazwO7Q5HJdNDJzp.hY6K2fMWiEWe5F6muci', 'Lead',   'Mentor', 'Programme lead and code reviewer.',       '', '2'),
-('admin',   'admin@example.com',   'y$TvllbUox5m3YifZZlFazwO7Q5HJdNDJzp.hY6K2fMWiEWe5F6muci', 'System', 'Admin',  'Platform Administrator',                  '', '1');
+('intern1', 'intern1@example.com', '$2y$12$aoICqfBI1Q.JuF4rWrYpBuXLTIj78qvJ.VGI.8aNjlFf1NQIdY..G', 'Intern', 'One', 'First intern on the Tribbbal programme.', 'https://via.placeholder.com/150', '0'),
+('mentor',  'mentor@example.com',  '$2y$12$aoICqfBI1Q.JuF4rWrYpBuXLTIj78qvJ.VGI.8aNjlFf1NQIdY..G', 'Lead',   'Mentor', 'Programme lead and code reviewer.',       '', '2'),
+('admin',   'admin@example.com',   '$2y$12$aoICqfBI1Q.JuF4rWrYpBuXLTIj78qvJ.VGI.8aNjlFf1NQIdY..G', 'System', 'Admin',  'Platform Administrator',                 '', '1');
 
 -- -----------------------------------------------------------------
 -- calendar_events (With support for curriculum trackers)
