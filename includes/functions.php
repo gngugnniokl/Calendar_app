@@ -753,6 +753,8 @@ function Wo_GetTimelineUser(mysqli $conn, string $username): ?array
             CONCAT(first_name, ' ', last_name) AS name, 
             about, 
             avatar, 
+            cover,
+            profile_color,
             CASE 
                 WHEN admin = '1' THEN 'admin'
                 WHEN admin = '2' THEN 'mentor'
@@ -1011,6 +1013,20 @@ function Wo_DeleteBadLogins(mysqli $conn): void
     }
 }
 /**
+ * Wo_IsNudged() — Checks if a pending nudge already exists
+ * from the sender to the receiver.
+ */
+function Wo_IsNudged(mysqli $conn, int $sender, int $receiver): bool {
+    $stmt = mysqli_prepare($conn, "SELECT id FROM calendar_nudges WHERE sender_id = ? AND receiver_id = ?");
+    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_store_result($stmt);
+    $exists = mysqli_stmt_num_rows($stmt) > 0;
+    mysqli_stmt_close($stmt);
+    return $exists;
+}
+
+/**
  * Wo_SendNudge() — inserts a nudge if one doesn't already exist
  * from this sender to this receiver.
  * Uses: mysqli_prepare()
@@ -1112,15 +1128,26 @@ function Wo_GetNudgesForUser(mysqli $conn, int $user_id): array {
  * @param int $user_id
  * @return array
  */
-function Wo_GetUserPosts(mysqli $conn, int $user_id): array {
-    $stmt = mysqli_prepare($conn, 
-        "SELECT p.id, p.postText, p.time, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
-         FROM Wo_Posts p
-         JOIN Wo_Users u ON p.user_id = u.user_id
-         WHERE p.user_id = ? AND p.active = 1
-         ORDER BY p.time DESC"
-    );
-    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+function Wo_GetUserPosts(mysqli $conn, int $user_id = 0): array {
+    if ($user_id > 0) {
+        $stmt = mysqli_prepare($conn, 
+            "SELECT p.id, p.postText, p.postFile, p.postFileName, p.postLink, p.time, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
+             FROM Wo_Posts p
+             JOIN Wo_Users u ON p.user_id = u.user_id
+             WHERE p.user_id = ? AND p.active = 1
+             ORDER BY p.time DESC"
+        );
+        mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    } else {
+        $stmt = mysqli_prepare($conn, 
+            "SELECT p.id, p.postText, p.postFile, p.postFileName, p.postLink, p.time, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
+             FROM Wo_Posts p
+             JOIN Wo_Users u ON p.user_id = u.user_id
+             WHERE p.active = 1
+             ORDER BY p.time DESC"
+        );
+    }
+    
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
     $posts = [];

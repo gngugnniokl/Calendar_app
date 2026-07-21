@@ -21,7 +21,10 @@ switch ($s) {
             exit();
         }
         // Prevent duplicate nudge (one active nudge per sender→receiver pair)
-        Wo_SendNudge($conn, $me, $receiver);
+        if (!Wo_SendNudge($conn, $me, $receiver)) {
+            echo json_encode(['success' => false, 'message' => 'Already nudged.']);
+            exit();
+        }
         echo json_encode(['success' => true]);
         exit();
 
@@ -33,7 +36,10 @@ switch ($s) {
             exit();
         }
         // Delete the inbound nudge, then insert a new one going back
-        Wo_NudgeBack($conn, $nudge_id, $me, $sender);
+        if (!Wo_NudgeBack($conn, $nudge_id, $me, $sender)) {
+            echo json_encode(['success' => false, 'message' => 'Nudge expired or already returned.']);
+            exit();
+        }
         echo json_encode(['success' => true]);
         exit();
 
