@@ -1,0 +1,121 @@
+<style>
+.notifications-list {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.notification-item {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-card);
+}
+.notification-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* elevated shadow */
+}
+.notification-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+.notification-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.notification-content {
+    flex: 1;
+}
+.notification-content p {
+    margin: 0 0 5px 0;
+    font-size: 15px;
+}
+.notification-time {
+    font-size: 13px;
+    color: var(--muted);
+}
+.notification-actions {
+    margin-left: 15px;
+}
+</style>
+
+<section class="page-intro" style="text-align: center; margin-top: 40px;">
+    <h1 class="hero-title">Notifications</h1>
+    <p style="color: var(--muted); margin-top: 10px;">Stay updated with your latest alerts and nudges.</p>
+</section>
+
+<div class="notifications-list">
+    <?php if (empty($wo['nudges']) /* && empty($wo['notifications']) */): ?>
+        <div style="text-align: center; color: var(--muted); padding: 60px 20px; background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);">
+            <i class="fa-regular fa-bell" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+            <p>You have no new notifications.</p>
+        </div>
+    <?php else: ?>
+        <!-- Display Nudges as Notifications -->
+        <?php if (!empty($wo['nudges'])): ?>
+            <?php foreach ($wo['nudges'] as $nudge): ?>
+                <div class="notification-item" id="notification-nudge-<?php echo (int)$nudge['id']; ?>">
+                    <div class="notification-icon">
+                        <img src="<?php echo clean($nudge['avatar']); ?>" alt="Avatar">
+                    </div>
+                    <div class="notification-content">
+                        <p>
+                            <a href="?link1=timeline&u=<?php echo clean($nudge['username']); ?>" style="font-weight: 600; color: var(--midnight);">
+                                <?php echo clean($nudge['name']); ?>
+                            </a> 
+                            nudged you!
+                        </p>
+                        <span class="notification-time">
+                            <i class="fa-regular fa-clock" style="margin-right: 4px;"></i>
+                            <?php echo format_date($nudge['created_at'], 'M j, g:ia'); ?>
+                        </span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn btn-ghost nudge-back-btn"
+                                onclick="nudgeBack(<?php echo (int)$nudge['id']; ?>, <?php echo (int)$nudge['sender_id']; ?>, this)">
+                            <i class="fa-solid fa-hand-point-left"></i> Nudge Back
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>
+
+<script>
+function nudgeBack(id, senderId, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+    
+    const formData = new FormData();
+    formData.append('receiver_id', senderId);
+
+    fetch('?link1=xhr_nudge', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 200) {
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Nudged!';
+            btn.style.color = 'var(--pine)';
+        } else {
+            console.error('Nudge failed:', data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-hand-point-left"></i> Try Again';
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-hand-point-left"></i> Nudge Back';
+    });
+}
+</script>

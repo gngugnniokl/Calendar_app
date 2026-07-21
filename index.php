@@ -22,13 +22,14 @@ $protected_pages = [
     'internship_calendar_home',
     'timeline',
     'nudges',
+    'notifications',
 ];
 
 $all_pages = array_merge($public_pages, $protected_pages);
 
 // Default routing
 if ($link1 === '') {
-    $link1 = $wo['loggedin'] ? 'internship_calendar' : 'welcome';
+    $link1 = $wo['loggedin'] ? 'timeline' : 'welcome';
 }
 
 // Auth gate: redirect unauthenticated users from protected pages
@@ -39,7 +40,7 @@ if (in_array($link1, $protected_pages) && !$wo['loggedin']) {
 
 // Redirect logged-in users away from auth pages
 if (in_array($link1, ['welcome', 'register']) && $wo['loggedin']) {
-    header('Location: ?link1=internship_calendar');
+    header('Location: ?link1=timeline');
     exit();
 }
 

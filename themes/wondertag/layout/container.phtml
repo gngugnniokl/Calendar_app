@@ -24,11 +24,11 @@
 <body>
     <header class="site-header">
         <div class="header-inner">
-            <a href="?link1=internship_calendar" class="brand">
-                <span class="brand-mark"></span>
-                <span class="brand-text">Tribbbal Internship</span>
-            </a>
-            <nav class="main-nav">
+                <a href="?link1=internship_calendar_home" class="brand">
+                    <span class="brand-mark"></span>
+                    <span class="brand-text">Tribbbal Internship</span>
+                </a>
+                <nav class="main-nav">
 
                 <button id="theme-toggle" class="btn btn-ghost" aria-label="Toggle Dark Mode" style="padding: 6px 10px; margin-left: 8px;">
                     <span class="theme-icon-light">
@@ -51,12 +51,22 @@
                     </span>
                 </button>
                 <?php if (!empty($wo['loggedin'])): ?>
-                    <div class="nav-user">
-                        <img src="<?php echo htmlspecialchars($wo['user']['avatar'] ?? 'upload/photos/d-avatar.jpg'); ?>"
-                             alt="<?php echo htmlspecialchars($wo['user']['name'] ?? ''); ?>"
-                             class="nav-avatar">
-                        <span class="nav-username"><?php echo htmlspecialchars($wo['user']['name'] ?? ''); ?></span>
-                    </div>
+                    <a href="?link1=timeline&u=<?php echo htmlspecialchars($wo['user']['username'] ?? ''); ?>" style="text-decoration: none; color: inherit;">
+                        <div class="nav-user" style="display: flex; align-items: center; gap: 8px;">
+                            <?php 
+                                $nav_avatar = $wo['user']['avatar'] ?? 'upload/photos/d-avatar.jpg';
+                                $nav_name = $wo['user']['name'] ?? $wo['user']['username'] ?? '';
+                                if ($nav_avatar !== 'upload/photos/d-avatar.jpg'): 
+                            ?>
+                                <img src="<?php echo htmlspecialchars($nav_avatar); ?>" alt="<?php echo htmlspecialchars($nav_name); ?>" class="nav-avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--hairline); display: block;">
+                            <?php else: ?>
+                                <div class="nav-avatar" style="background: var(--pine-tint); color: var(--pine); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                    <?php echo strtoupper(substr($nav_name, 0, 2)); ?>
+                                </div>
+                            <?php endif; ?>
+                            <span class="nav-username"><?php echo htmlspecialchars($wo['user']['name'] ?? ''); ?></span>
+                        </div>
+                    </a>
                     <a href="?link1=logout" class="btn btn-ghost nav-logout">Logout</a>
                 <?php else: ?>
                     <a href="?link1=welcome" class="btn btn-ghost">Log In</a>
@@ -66,11 +76,11 @@
         </div>
     </header>
 
-    <div style="display: flex; min-height: calc(100vh - 66px);">
+    <div class="<?php echo !empty($wo['loggedin']) ? 'app-layout' : 'app-layout-guest'; ?>" style="display: flex; min-height: calc(100vh - 66px); margin-top: 66px;">
         <?php if (!empty($wo['loggedin'])): ?>
         <aside class="global-sidebar">
             <ul class="nav-icons" style="display: flex; flex-direction: column; gap: 15px;">
-                <a href="?link1=internship_calendar&week=1"  style="color: inherit; text-decoration: none;">
+                <a href="?link1=internship_calendar"  style="color: inherit; text-decoration: none;">
                     <li class="nav-icon bg-orange">
                         <i class="fa-solid fa-calendar-days"></i>
                         <span class="nav-label">Calendar</span>

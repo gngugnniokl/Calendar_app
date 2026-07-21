@@ -18,9 +18,14 @@ $username = isset($_GET['u']) ? trim((string) $_GET['u']) : '';
 $type     = isset($_GET['type']) ? trim((string) $_GET['type']) : '';
 
 if ($username === '') {
-    // No username supplied — redirect to home
-    header('Location: ?link1=internship_calendar');
-    exit();
+    // No username supplied, try to use logged in user's username
+    if (!empty($wo['user']['username'])) {
+        $username = $wo['user']['username'];
+    } else {
+        // Not logged in and no user supplied - redirect to home
+        header('Location: ?link1=welcome');
+        exit();
+    }
 }
 
 // Look up the user
@@ -41,7 +46,13 @@ $wo['user_profile']  = $profile;
 $wo['timeline_type'] = $type;
 
 // Load this user's social posts for the timeline feed
-$wo['user_posts'] = Wo_GetUserPosts($conn, (int) $profile['user_id']);
+// If viewing our own profile, fetch ALL timeline posts globally.
+// Otherwise, fetch just the specific user's posts.
+if (!empty($wo['user']['user_id']) && $wo['user']['user_id'] === $profile['user_id']) {
+    $wo['user_posts'] = Wo_GetUserPosts($conn, 0);
+} else {
+    $wo['user_posts'] = Wo_GetUserPosts($conn, (int) $profile['user_id']);
+}
 
 // Calendar Timeline Strip data
 require_once __DIR__ . '/../includes/timeline_calendar.php';

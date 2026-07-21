@@ -58,7 +58,7 @@ switch ($s) {
         // Clear bad logins
         Wo_DeleteBadLogins($conn);
 
-        respond(true, 'Login successful.', ['location' => '?link1=internship_calendar']);
+        respond(true, 'Login successful.', ['location' => '?link1=timeline']);
         break;
 
     case 'register':
@@ -113,7 +113,7 @@ switch ($s) {
         $session = Wo_CreateLoginSession($conn, (int) $result);
         $_SESSION['user_id'] = $session;
 
-        respond(true, 'Account created successfully.', ['location' => '?link1=internship_calendar']);
+        respond(true, 'Account created successfully.', ['location' => '?link1=timeline']);
         break;
 
     case 'forgot_password':

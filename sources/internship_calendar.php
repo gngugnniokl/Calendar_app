@@ -40,12 +40,10 @@ if (!empty($_GET['export']) && $_GET['export'] === 'excel') {
 }
 
 if (!$has_filters) {
-    // Show Home Page
-    $wo['page_title']   = $page_title;
-    $wo['weeks']        = Wo_GetInternshipCalendarWeeks($conn);
-    $wo['current_week'] = Wo_GetCurrentInternshipWeek($conn);
-    
-    $wo['content'] = Wo_LoadPage('internship_calendar/home');
+    // Redirect to Current Week by default
+    $current = Wo_GetCurrentInternshipWeek($conn);
+    header("Location: ?link1=internship_calendar&week={$current}");
+    exit();
 } else {
     // Fetch data via functions
     $wo['page_title']      = $page_title;
