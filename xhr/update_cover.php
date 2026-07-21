@@ -31,7 +31,12 @@ if (isset($_FILES['cover']) && !empty($_FILES['cover']['name'])) {
         mkdir('../upload/photos/', 0777, true);
     }
     
-    $ext = pathinfo($fileInfo['name'], PATHINFO_EXTENSION);
+    $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+    $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($ext, $allowed_exts)) {
+        echo json_encode(['success' => false, 'message' => 'Security Error: Only image files are allowed.']);
+        exit();
+    }
     $new_filename = 'upload/photos/' . md5(time() . rand(11, 99)) . '.' . $ext;
     
     if (move_uploaded_file($fileInfo['file'], '../' . $new_filename)) {

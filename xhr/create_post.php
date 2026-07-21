@@ -39,7 +39,12 @@ if (isset($_FILES['postFile']) && !empty($_FILES['postFile']['name'])) {
         mkdir('../upload/files/', 0777, true);
     }
     
-    $ext = pathinfo($fileInfo['name'], PATHINFO_EXTENSION);
+    $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+    $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
+    if (!in_array($ext, $allowed_exts)) {
+        echo json_encode(['success' => false, 'message' => 'Security Error: File type not allowed.']);
+        exit();
+    }
     $new_filename = 'upload/files/' . md5(time() . rand(11, 99)) . '.' . $ext;
     
     if (move_uploaded_file($fileInfo['file'], '../' . $new_filename)) {
