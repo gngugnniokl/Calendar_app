@@ -11,6 +11,20 @@ if (!Wo_IsLogged($conn) || empty($wo['user']['user_id'])) {
 
 $me = (int)$wo['user']['user_id'];
 
+if (isset($_POST['remove']) && $_POST['remove'] === 'true') {
+    $default_cover = 'upload/photos/d-cover.jpg';
+    $stmt = mysqli_prepare($conn, "UPDATE Wo_Users SET cover = ? WHERE user_id = ?");
+    mysqli_stmt_bind_param($stmt, "si", $default_cover, $me);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Database error.']);
+    }
+    mysqli_stmt_close($stmt);
+    exit();
+}
+
 if (isset($_FILES['cover']) && !empty($_FILES['cover']['name'])) {
     $fileInfo = array(
         'file' => $_FILES["cover"]["tmp_name"],
