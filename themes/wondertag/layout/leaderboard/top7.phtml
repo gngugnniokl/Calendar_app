@@ -1,0 +1,113 @@
+<?php
+/**
+ * Top 7 Leaderboard View
+ *
+ * Rendered inside leaderboard/content.phtml. Expects the page controller
+ * (leaderboard.php, Dev 6) to have populated $wo['top7_rankings'] the
+ * same way timeline.php populates $wo['user_posts'] — server-rendered
+ * on initial load, not fetched client-side.
+ *
+ * Row shape (matches Dev 2's JSON contract):
+ *   ['rank' => 1, 'username' => 'string', 'name' => 'string',
+ *    'avatar' => 'upload/photos/...', 'tokens' => 15420]
+ *
+ * Falls back to mock rows so this view still renders on Day 1,
+ * before $wo['top7_rankings'] is wired up.
+ */
+
+$topSeven = $wo['top7_rankings'] ?? [
+    ['rank' => 1, 'username' => 'nightowl_ade',  'name' => 'Ade Bello',   'avatar' => '', 'tokens' => 15420],
+    ['rank' => 2, 'username' => 'kemi_codes',     'name' => 'Kemi Alade', 'avatar' => '', 'tokens' => 13980],
+    ['rank' => 3, 'username' => 'triBBBal_king',  'name' => 'Tunde O.',   'avatar' => '', 'tokens' => 12750],
+    ['rank' => 4, 'username' => 'lagoslive',      'name' => 'Chioma N.',  'avatar' => '', 'tokens' => 9800],
+    ['rank' => 5, 'username' => 'chidi.exe',      'name' => 'Chidi K.',   'avatar' => '', 'tokens' => 8650],
+    ['rank' => 6, 'username' => 'amaka_v',        'name' => 'Amaka V.',   'avatar' => '', 'tokens' => 7420],
+    ['rank' => 7, 'username' => 'darey_on_top',   'name' => 'Darey A.',   'avatar' => '', 'tokens' => 6900],
+];
+
+$currentUserId = !empty($wo['user']['user_id']) ? (int) $wo['user']['user_id'] : 0;
+
+$podium = [];
+$standard = [];
+foreach ($topSeven as $row) {
+    if ($row['rank'] <= 3) {
+        $podium[(int) $row['rank']] = $row;
+    } else {
+        $standard[] = $row;
+    }
+}
+// Display order: 2nd (left), 1st (center), 3rd (right)
+$podiumDisplay = [$podium[2] ?? null, $podium[1] ?? null, $podium[3] ?? null];
+
+function lb_initials(string $name): string
+{
+    return strtoupper(substr(trim($name), 0, 1)) ?: '?';
+}
+?>
+
+<section class="hero-banner">
+    <i class="fa-solid fa-trophy hero-banner__trophy" aria-hidden="true"></i>
+    <h1 class="hero-banner__title">Leaderboard</h1>
+    <p class="hero-banner__subtitle">Top token earners on triBBBal right now</p>
+</section>
+
+<section class="rules-card-row">
+    <div class="rules-card">
+        <span class="rules-card__eyebrow">Earn</span>
+        <p>Tokens accrue from engagement — posts, reactions, and daily streaks all count toward your rank.</p>
+    </div>
+    <div class="rules-card">
+        <span class="rules-card__eyebrow">Refresh</span>
+        <p>Rankings recalculate every 5 minutes, so a burst of activity can move you up fast.</p>
+    </div>
+    <div class="rules-card">
+        <span class="rules-card__eyebrow">Compete</span>
+        <p>Only your top 7 all-time rivals are shown here — see the full field in Full Rankings.</p>
+    </div>
+</section>
+
+<section class="podium" aria-label="Top 3 ranked users">
+    <?php foreach ($podiumDisplay as $entry): ?>
+        <?php if ($entry === null) { continue; } ?>
+        <?php
+            $rank = (int) $entry['rank'];
+            $tier = $rank === 1 ? 'gold' : ($rank === 2 ? 'silver' : 'bronze');
+            $isYou = $currentUserId && !empty($entry['user_id']) && (int) $entry['user_id'] === $currentUserId;
+            $displayName = $entry['name'] ?? $entry['username'];
+        ?>
+        <div class="podium__place podium__place--<?php echo $tier; ?><?php echo $isYou ? ' podium__place--you' : ''; ?>" data-rank="<?php echo $rank; ?>">
+            <div class="podium__avatar">
+                <?php if (!empty($entry['avatar'])): ?>
+                    <img src="<?php echo clean($entry['avatar']); ?>" alt="">
+                <?php else: ?>
+                    <span><?php echo clean(lb_initials($displayName)); ?></span>
+                <?php endif; ?>
+                <span class="podium__badge">#<?php echo $rank; ?></span>
+            </div>
+            <div class="podium__username"><?php echo clean($displayName); ?></div>
+            <div class="podium__tokens"><?php echo number_format((int) $entry['tokens']); ?> tokens</div>
+            <div class="podium__pillar"></div>
+        </div>
+    <?php endforeach; ?>
+</section>
+
+<section class="rank-cards" aria-label="Ranks 4 through 7">
+    <?php foreach ($standard as $entry): ?>
+        <?php
+            $isYou = $currentUserId && !empty($entry['user_id']) && (int) $entry['user_id'] === $currentUserId;
+            $displayName = $entry['name'] ?? $entry['username'];
+        ?>
+        <div class="rank-card<?php echo $isYou ? ' rank-card--you' : ''; ?>">
+            <span class="rank-card__rank">#<?php echo (int) $entry['rank']; ?></span>
+            <div class="rank-card__avatar">
+                <?php if (!empty($entry['avatar'])): ?>
+                    <img src="<?php echo clean($entry['avatar']); ?>" alt="">
+                <?php else: ?>
+                    <span><?php echo clean(lb_initials($displayName)); ?></span>
+                <?php endif; ?>
+            </div>
+            <span class="rank-card__username"><?php echo clean($displayName); ?></span>
+            <span class="rank-card__tokens"><?php echo number_format((int) $entry['tokens']); ?></span>
+        </div>
+    <?php endforeach; ?>
+</section>
