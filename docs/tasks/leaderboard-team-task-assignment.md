@@ -9,16 +9,16 @@
 
 **Scope:** Database schema, stored procedures, scheduled rank recalculation, and mock data seeding.
 
-*   **Specific Files to Edit / Create:**
-    *   `sql/leaderboard-schema.sql` (Move/run from `Lotir project/documents/leaderboard-implementation/docs/`)
-    *   `Lotir project/documents/leaderboard-implementation/dummy_users.sql` (Run for mock data)
-    *   `Lotir project/documents/leaderboard-implementation/dummy_tokens.sql` (Run for mock data)
-    *   Server `crontab` file (External to repo).
-*   **Routes & Endpoints Managed:** None.
-*   **Key Responsibilities:**
-    *   Create `leaderboard_tokens`, `token_transactions`, and `leaderboard_config` tables.
-    *   Execute the `RecalculateRanks()` stored procedure.
-    *   Configure the CRON job: `*/5 * * * * mysql -u root -p tribbbal -e "CALL RecalculateRanks();"`
+- **Specific Files to Edit / Create:**
+  - `sql/leaderboard-schema.sql` (Move/run from `Lotir project/documents/leaderboard-implementation/docs/`)
+  - `Lotir project/documents/leaderboard-implementation/dummy_users.sql` (Run for mock data)
+  - `Lotir project/documents/leaderboard-implementation/dummy_tokens.sql` (Run for mock data)
+  - Server `crontab` file (External to repo).
+- **Routes & Endpoints Managed:** None.
+- **Key Responsibilities:**
+  - Create `leaderboard_tokens`, `token_transactions`, and `leaderboard_config` tables.
+  - Execute the `RecalculateRanks()` stored procedure.
+  - Configure the CRON job: `*/5 * * * * mysql -u root -p tribbbal -e "CALL RecalculateRanks();"`
 
 ---
 
@@ -26,17 +26,17 @@
 
 **Scope:** Constructing the JSON API endpoints that serve leaderboard data to the frontend, incorporating pagination, search, filters, and caching.
 
-*   **Specific Files to Edit / Create:**
-    *   `xhr/leaderboard.php` (New file for AJAX/API requests, fitting the existing `xhr/` structure).
-    *   `includes/functions.php` (If global utility functions are needed for token calculation).
-*   **Routes & Endpoints Managed:**
-    *   `GET /xhr/leaderboard.php?action=top7` (or `/api/leaderboard/top7`)
-    *   `GET /xhr/leaderboard.php?action=rankings` (or `/api/leaderboard/rankings`)
-    *   `GET /xhr/leaderboard.php?action=user&id={id}` (or `/api/leaderboard/user/{id}`)
-*   **Key Responsibilities:**
-    *   Implement Redis/Transient caching on the `top7` feed.
-    *   Write the complex SQL select queries for the data payload.
-    *   Provide hardcoded JSON mock responses on Day 1 for Developer 5 to use.
+- **Specific Files to Edit / Create:**
+  - `xhr/leaderboard.php` (New file for AJAX/API requests, fitting the existing `xhr/` structure).
+  - `includes/functions.php` (If global utility functions are needed for token calculation).
+- **Routes & Endpoints Managed:**
+  - `GET /xhr/leaderboard.php?action=top7` (or `/api/leaderboard/top7`)
+  - `GET /xhr/leaderboard.php?action=rankings` (or `/api/leaderboard/rankings`)
+  - `GET /xhr/leaderboard.php?action=user&id={id}` (or `/api/leaderboard/user/{id}`)
+- **Key Responsibilities:**
+  - Implement Redis/Transient caching on the `top7` feed.
+  - Write the complex SQL select queries for the data payload.
+  - Provide hardcoded JSON mock responses on Day 1 for Developer 5 to use.
 
 ---
 
@@ -44,16 +44,16 @@
 
 **Scope:** HTML and CSS exclusively for the visual layout of the main Top 7 hero screen.
 
-*   **Specific Files to Edit / Create:**
-    *   `themes/wondertag/layout/leaderboard/content.phtml` (New file: Main view layout).
-    *   `themes/wondertag/layout/leaderboard/top7.phtml` (New file: Top 7 component).
-    *   `themes/wondertag/css/leaderboard.css` (Targeting only `.hero-banner`, `.podium`, `.rules-card` classes).
-*   **Routes & Endpoints Managed:** None (UI only).
-*   **Key Responsibilities:**
-    *   Build the Hero Banner (Gradient & 3D Trophy).
-    *   Build the Business Rules section (3-column layout).
-    *   Build the Top 3 Podium (Gold, Silver, Bronze badges/borders).
-    *   Build the 4-7 rank standard cards.
+- **Specific Files to Edit / Create:**
+  - `themes/wondertag/layout/leaderboard/content.phtml` (New file: Main view layout).
+  - `themes/wondertag/layout/leaderboard/top7.phtml` (New file: Top 7 component).
+  - `themes/wondertag/css/leaderboard.css` (Targeting only `.hero-banner`, `.podium`, `.rules-card` classes).
+- **Routes & Endpoints Managed:** None (UI only).
+- **Key Responsibilities:**
+  - Build the Hero Banner (Gradient & 3D Trophy).
+  - Build the Business Rules section (3-column layout).
+  - Build the Top 3 Podium (Gold, Silver, Bronze badges/borders).
+  - Build the 4-7 rank standard cards.
 
 ---
 
@@ -61,15 +61,15 @@
 
 **Scope:** HTML and CSS exclusively for the paginated table and filtering user interface.
 
-*   **Specific Files to Edit / Create:**
-    *   `themes/wondertag/layout/leaderboard/full_rankings.phtml` (New file: List view component).
-    *   `themes/wondertag/css/leaderboard.css` (Targeting only `.rankings-table`, `.search-bar`, `.filter-pills`, `.highlight-row` classes).
-*   **Routes & Endpoints Managed:** None (UI only).
-*   **Key Responsibilities:**
-    *   Build the Data Table (Alternating row shades, responsive overflow).
-    *   Build the time-filter pills (All Time, This Month, etc.) and search input.
-    *   Style the "Your Rank" highlight CSS (Red border/glow).
-    *   Build the Pagination UI controls.
+- **Specific Files to Edit / Create:**
+  - `themes/wondertag/layout/leaderboard/full_rankings.phtml` (New file: List view component).
+  - `themes/wondertag/css/leaderboard.css` (Targeting only `.rankings-table`, `.search-bar`, `.filter-pills`, `.highlight-row` classes).
+- **Routes & Endpoints Managed:** None (UI only).
+- **Key Responsibilities:**
+  - Build the Data Table (Alternating row shades, responsive overflow).
+  - Build the time-filter pills (All Time, This Month, etc.) and search input.
+  - Style the "Your Rank" highlight CSS (Red border/glow).
+  - Build the Pagination UI controls.
 
 ---
 
@@ -77,14 +77,14 @@
 
 **Scope:** Connecting the rendered UI (built by Dev 3 & 4) to the JSON data (built by Dev 2) via JavaScript.
 
-*   **Specific Files to Edit / Create:**
-    *   `themes/wondertag/javascript/leaderboard.js` (New file).
-*   **Routes & Endpoints Managed:** Consumes endpoints from Developer 2.
-*   **Key Responsibilities:**
-    *   Write `fetch()` calls to `xhr/leaderboard.php`.
-    *   Implement real-time debounce for the search input.
-    *   Handle DOM manipulation (injecting table rows, swapping user avatars, appending badges).
-    *   Manage view switching (Top 7 vs. Full Rankings screen toggling).
+- **Specific Files to Edit / Create:**
+  - `themes/wondertag/javascript/leaderboard.js` (New file).
+- **Routes & Endpoints Managed:** Consumes endpoints from Developer 2.
+- **Key Responsibilities:**
+  - Write `fetch()` calls to `xhr/leaderboard.php`.
+  - Implement real-time debounce for the search input.
+  - Handle DOM manipulation (injecting table rows, swapping user avatars, appending badges).
+  - Manage view switching (Top 7 vs. Full Rankings screen toggling).
 
 ---
 
@@ -92,17 +92,17 @@
 
 **Scope:** Integrating the isolated feature safely into the global platform ecosystem, main routing, and global navigations.
 
-*   **Specific Files to Edit / Create:**
-    *   `index.php` (To register the new `/leaderboard` static route).
-    *   `themes/wondertag/layout/container.phtml` (To add sidebar navigation and sticky footer).
-    *   `leaderboard.php` (New file at root level to act as the page controller, similar to `timeline.php`).
-*   **Routes & Endpoints Managed:**
-    *   `GET /leaderboard` (The main page route viewed by users).
-*   **Key Responsibilities:**
-    *   Update `index.php` routing to resolve `/leaderboard` to `leaderboard.php`.
-    *   Add the gold trophy Leaderboard icon to the main left sidebar (`container.phtml`).
-    *   Inject the PHP Session ID: `<script>window.TRIBBBAL_USER_ID = <?= $_SESSION['user_id']; ?>;</script>` globally.
-    *   Build the sticky progress-bar footer logic that persists across the platform for logged-in users.
+- **Specific Files to Edit / Create:**
+  - `index.php` (To register the new `/leaderboard` static route).
+  - `themes/wondertag/layout/container.phtml` (To add sidebar navigation and sticky footer).
+  - `leaderboard.php` (New file at root level to act as the page controller, similar to `timeline.php`).
+- **Routes & Endpoints Managed:**
+  - `GET /leaderboard` (The main page route viewed by users).
+- **Key Responsibilities:**
+  - Update `index.php` routing to resolve `/leaderboard` to `leaderboard.php`.
+  - Add the gold trophy Leaderboard icon to the main left sidebar (`container.phtml`).
+  - Inject the PHP Session ID: `<script>window.TRIBBBAL_USER_ID = <?= $_SESSION['user_id']; ?>;</script>` globally.
+  - Build the sticky progress-bar footer logic that persists across the platform for logged-in users.
 
 ---
 
@@ -114,10 +114,10 @@ Below is the **strict coding order** each developer must follow. Since all devs 
 
 ### Phase 1 — Foundation (Can Start Simultaneously)
 
-| Priority | Developer | Reason |
-|----------|-----------|--------|
-| 🥇 1st | **Dev 1 – Database Engineer** | Zero file overlap with anyone. Only touches `sql/` files and external crontab. Everyone else needs the DB tables to exist before meaningful integration testing. |
-| 🥇 1st | **Dev 6 – Core Platform Integrator** | Touches `index.php` and `container.phtml` — files no other dev touches. Creates the routing skeleton (`leaderboard.php`) that all other work plugs into. Must merge first so the page actually loads. |
+| Priority | Developer                            | Reason                                                                                                                                                                                                |
+| -------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🥇 1st   | **Dev 1 – Database Engineer**        | Zero file overlap with anyone. Only touches `sql/` files and external crontab. Everyone else needs the DB tables to exist before meaningful integration testing.                                      |
+| 🥇 1st   | **Dev 6 – Core Platform Integrator** | Touches `index.php` and `container.phtml` — files no other dev touches. Creates the routing skeleton (`leaderboard.php`) that all other work plugs into. Must merge first so the page actually loads. |
 
 > **Why parallel:** Dev 1 only edits `sql/` files. Dev 6 only edits `index.php`, `container.phtml`, and creates `leaderboard.php`. Zero file overlap = zero merge conflict.
 
@@ -125,10 +125,10 @@ Below is the **strict coding order** each developer must follow. Since all devs 
 
 ### Phase 2 — Backend + First Frontend (Start After Phase 1 Merges)
 
-| Priority | Developer | Reason |
-|----------|-----------|--------|
-| 🥈 2nd | **Dev 2 – Backend API Developer** | Creates `xhr/leaderboard.php` (new file, no conflict). May append to `includes/functions.php` — this is safe because Dev 6 does NOT touch this file. Must be merged before Dev 5 can do real API integration. |
-| 🥈 2nd | **Dev 3 – Frontend UI Developer A (Top 7)** | Creates new `.phtml` files AND **creates** `themes/wondertag/css/leaderboard.css`. Since this file doesn't exist yet, Dev 3 must be the one to create it first. Dev 4 appends to it later. |
+| Priority | Developer                                   | Reason                                                                                                                                                                                                        |
+| -------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🥈 2nd   | **Dev 2 – Backend API Developer**           | Creates `xhr/leaderboard.php` (new file, no conflict). May append to `includes/functions.php` — this is safe because Dev 6 does NOT touch this file. Must be merged before Dev 5 can do real API integration. |
+| 🥈 2nd   | **Dev 3 – Frontend UI Developer A (Top 7)** | Creates new `.phtml` files AND **creates** `themes/wondertag/css/leaderboard.css`. Since this file doesn't exist yet, Dev 3 must be the one to create it first. Dev 4 appends to it later.                    |
 
 > **Why parallel:** Dev 2 works in `xhr/` and `includes/`. Dev 3 works in `themes/wondertag/layout/leaderboard/` and `themes/wondertag/css/`. Zero file overlap = zero merge conflict.
 
@@ -136,11 +136,12 @@ Below is the **strict coding order** each developer must follow. Since all devs 
 
 ### Phase 3 — Second Frontend (Start After Dev 3 Merges)
 
-| Priority | Developer | Reason |
-|----------|-----------|--------|
-| 🥉 3rd | **Dev 4 – Frontend UI Developer B (Full Rankings)** | Creates `full_rankings.phtml` (new file, safe). **Appends** CSS to `leaderboard.css` — MUST wait for Dev 3's merge so the file exists and there's no concurrent write conflict on the same file. |
+| Priority | Developer                                           | Reason                                                                                                                                                                                           |
+| -------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🥉 3rd   | **Dev 4 – Frontend UI Developer B (Full Rankings)** | Creates `full_rankings.phtml` (new file, safe). **Appends** CSS to `leaderboard.css` — MUST wait for Dev 3's merge so the file exists and there's no concurrent write conflict on the same file. |
 
 > **Critical rule:** Dev 4 writes CSS **only at the bottom** of `leaderboard.css` under a clear comment block:
+>
 > ```css
 > /* ═══════════════════════════════════════════
 >    FULL RANKINGS VIEW — Dev 4 Styles Below
@@ -151,8 +152,8 @@ Below is the **strict coding order** each developer must follow. Since all devs 
 
 ### Phase 4 — JavaScript Glue (Start After Dev 2, 3, 4 All Merge)
 
-| Priority | Developer | Reason |
-|----------|-----------|--------|
+| Priority      | Developer                                  | Reason                                                                                                                                                                                                                                          |
+| ------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🏁 4th (Last) | **Dev 5 – Frontend Interactive Developer** | Creates `leaderboard.js` (new file, safe). But **cannot write meaningful code** until: (a) Dev 2's API endpoints exist to fetch from, (b) Dev 3 & 4's HTML element IDs exist to target. This dev goes last to avoid throwaway/placeholder code. |
 
 > **Why last:** Dev 5's entire job is connecting Dev 2's API to Dev 3/4's DOM. Starting earlier means guessing at selectors and endpoint shapes — leading to rework.
@@ -176,19 +177,19 @@ DAY 1          DAY 2          DAY 3          DAY 4
 
 ### Shared File Conflict Matrix
 
-| File | Dev 1 | Dev 2 | Dev 3 | Dev 4 | Dev 5 | Dev 6 |
-|------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| `sql/leaderboard-schema.sql` | ✏️ | | | | | |
-| `xhr/leaderboard.php` | | ✏️ | | | | |
-| `includes/functions.php` | | ✏️ | | | | |
-| `themes/.../css/leaderboard.css` | | | ✏️ | ⚠️ | | |
-| `themes/.../layout/leaderboard/content.phtml` | | | ✏️ | | | |
-| `themes/.../layout/leaderboard/top7.phtml` | | | ✏️ | | | |
-| `themes/.../layout/leaderboard/full_rankings.phtml` | | | | ✏️ | | |
-| `themes/.../javascript/leaderboard.js` | | | | | ✏️ | |
-| `index.php` | | | | | | ✏️ |
-| `themes/.../layout/container.phtml` | | | | | | ✏️ |
-| `leaderboard.php` (root) | | | | | | ✏️ |
+| File                                                | Dev 1 | Dev 2 | Dev 3 | Dev 4 | Dev 5 | Dev 6 |
+| --------------------------------------------------- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `sql/leaderboard-schema.sql`                        |  ✏️   |       |       |       |       |       |
+| `xhr/leaderboard.php`                               |       |  ✏️   |       |       |       |       |
+| `includes/functions.php`                            |       |  ✏️   |       |       |       |       |
+| `themes/.../css/leaderboard.css`                    |       |       |  ✏️   |  ⚠️   |       |       |
+| `themes/.../layout/leaderboard/content.phtml`       |       |       |  ✏️   |       |       |       |
+| `themes/.../layout/leaderboard/top7.phtml`          |       |       |  ✏️   |       |       |       |
+| `themes/.../layout/leaderboard/full_rankings.phtml` |       |       |       |  ✏️   |       |       |
+| `themes/.../javascript/leaderboard.js`              |       |       |       |       |  ✏️   |       |
+| `index.php`                                         |       |       |       |       |       |  ✏️   |
+| `themes/.../layout/container.phtml`                 |       |       |       |       |       |  ✏️   |
+| `leaderboard.php` (root)                            |       |       |       |       |       |  ✏️   |
 
 > ⚠️ = Only conflict risk. Resolved by enforcing Phase 3 ordering (Dev 4 waits for Dev 3's merge).
 
