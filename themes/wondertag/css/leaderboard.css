@@ -1,0 +1,375 @@
+/* =====================================================================
+   Leaderboard — Top 7 View (Dev 3 scope)
+   Classes owned: .hero-banner, .rules-card(-row), .podium, .rank-cards
+   Inherits design tokens from internship-calendar.css — do not
+   redefine --pine, --surface, --hairline, etc. here.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Hero Banner
+   --------------------------------------------------------------------- */
+.hero-banner {
+  position: relative;
+  text-align: center;
+  padding: 56px 24px 64px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 28px;
+  background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
+  box-shadow: var(--shadow-card);
+}
+
+/* Subtle diagonal sheen, kept quiet so the trophy stays the focal point */
+.hero-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0) 40%
+  );
+  pointer-events: none;
+}
+
+.hero-banner__trophy {
+  font-size: 40px;
+  color: #ffe8a3;
+  /* Layered text-shadow for a pseudo-3D, beveled gold look */
+  text-shadow:
+    0 1px 0 #cf9f2e,
+    0 2px 0 #b98a1f,
+    0 3px 0 #a37814,
+    0 6px 10px rgba(0, 0, 0, 0.35);
+  margin-bottom: 14px;
+  display: block;
+}
+
+.hero-banner__title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.hero-banner__subtitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Business Rules (3-column)
+   --------------------------------------------------------------------- */
+.rules-card-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.rules-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.rules-card__eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pine);
+  background: var(--pine-tint);
+  padding: 4px 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.rules-card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------------
+   Podium (Top 3)
+   --------------------------------------------------------------------- */
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  margin: 0 0 40px;
+  padding: 0 8px;
+}
+
+.podium__place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 160px;
+  text-align: center;
+}
+
+.podium__avatar {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 3px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+  overflow: visible;
+}
+
+.podium__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.podium__badge {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+}
+
+.podium__username {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 2px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium__tokens {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.podium__pillar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-bottom: none;
+}
+
+/* Tier-specific: avatar ring, badge color, pillar height/finish */
+.podium__place--gold .podium__avatar {
+  border-color: #e6b800;
+}
+.podium__place--gold .podium__badge {
+  background: linear-gradient(180deg, #ffd75e, #d9a600);
+}
+.podium__place--gold .podium__pillar {
+  height: 96px;
+  background: linear-gradient(180deg, var(--pine-tint), var(--surface));
+  border-color: #e6b800;
+}
+
+.podium__place--silver .podium__avatar {
+  border-color: #adb5bd;
+}
+.podium__place--silver .podium__badge {
+  background: linear-gradient(180deg, #dde3e8, #9aa5ad);
+}
+.podium__place--silver .podium__pillar {
+  height: 66px;
+}
+
+.podium__place--bronze .podium__avatar {
+  border-color: #c17a4d;
+}
+.podium__place--bronze .podium__badge {
+  background: linear-gradient(180deg, #d99567, #a85f34);
+}
+.podium__place--bronze .podium__pillar {
+  height: 44px;
+}
+
+/* 1st place reads slightly larger — it's the focal point of the row */
+.podium__place--gold {
+  width: 176px;
+}
+.podium__place--gold .podium__avatar {
+  width: 92px;
+  height: 92px;
+  font-size: 30px;
+}
+
+.podium__place--you {
+  position: relative;
+}
+.podium__place--you .podium__avatar {
+  box-shadow: 0 0 0 4px var(--pine-tint);
+}
+.podium__place--you::before {
+  content: "You";
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pine);
+  background: var(--pine-tint);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   Rank Cards (4–7)
+   --------------------------------------------------------------------- */
+.rank-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rank-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.rank-card__rank {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.rank-card__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.rank-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rank-card__username {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-card__tokens {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* "Your Rank" highlight — red border/glow per spec */
+.rank-card--you {
+  border-color: var(--pine);
+  box-shadow:
+    0 0 0 3px var(--pine-tint),
+    var(--shadow-card);
+}
+.rank-card--you .rank-card__rank,
+.rank-card--you .rank-card__tokens {
+  color: var(--pine-dark);
+}
+
+/* ---------------------------------------------------------------------
+   Responsive
+   --------------------------------------------------------------------- */
+@media (max-width: 700px) {
+  .rules-card-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-banner {
+    padding: 40px 20px 48px;
+  }
+
+  .podium {
+    gap: 10px;
+  }
+
+  .podium__place {
+    width: 30%;
+  }
+
+  .podium__place--gold {
+    width: 34%;
+  }
+
+  .podium__place--gold .podium__avatar {
+    width: 68px;
+    height: 68px;
+    font-size: 22px;
+  }
+
+  .podium__avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 18px;
+  }
+
+  .podium__username {
+    font-size: 12px;
+  }
+
+  .rank-card {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+}
