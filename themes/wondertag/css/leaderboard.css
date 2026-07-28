@@ -1,3 +1,262 @@
+/* =====================================================================
+   Leaderboard — Top 7 View (Dev 3 scope)
+   Classes owned: .hero-banner, .rules-card(-row), .podium, .rank-cards
+   Inherits design tokens from internship-calendar.css — do not
+   redefine --pine, --surface, --hairline, etc. here.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Hero Banner
+   --------------------------------------------------------------------- */
+.hero-banner {
+  position: relative;
+  text-align: center;
+  padding: 56px 24px 64px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 28px;
+  background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
+  box-shadow: var(--shadow-card);
+}
+
+.hero-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0) 40%
+  );
+  pointer-events: none;
+}
+
+.hero-banner__trophy {
+  font-size: 40px;
+  color: #ffe8a3;
+  text-shadow:
+    0 1px 0 #cf9f2e,
+    0 2px 0 #b98a1f,
+    0 3px 0 #a37814,
+    0 6px 10px rgba(0, 0, 0, 0.35);
+  margin-bottom: 14px;
+  display: block;
+}
+
+.hero-banner__title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.hero-banner__subtitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Business Rules (3-column)
+   --------------------------------------------------------------------- */
+.rules-card-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.rules-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.rules-card__eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pine);
+  background: var(--pine-tint);
+  padding: 4px 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.rules-card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------------
+   Podium (Top 3)
+   --------------------------------------------------------------------- */
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  margin: 0 0 40px;
+  padding: 0 8px;
+}
+
+.podium__place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 160px;
+  text-align: center;
+}
+
+.podium__avatar {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 3px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+  overflow: visible;
+}
+
+.podium__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.podium__badge {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+}
+
+.podium__username {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 2px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium__tokens {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.podium__pillar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-bottom: none;
+}
+
+.podium__place--gold .podium__avatar { border-color: #e6b800; }
+.podium__place--gold .podium__badge { background: linear-gradient(180deg, #ffd75e, #d9a600); }
+.podium__place--gold .podium__pillar { height: 96px; background: linear-gradient(180deg, var(--pine-tint), var(--surface)); border-color: #e6b800; }
+
+.podium__place--silver .podium__avatar { border-color: #adb5bd; }
+.podium__place--silver .podium__badge { background: linear-gradient(180deg, #dde3e8, #9aa5ad); }
+.podium__place--silver .podium__pillar { height: 66px; }
+
+.podium__place--bronze .podium__avatar { border-color: #c17a4d; }
+.podium__place--bronze .podium__badge { background: linear-gradient(180deg, #d99567, #a85f34); }
+.podium__place--bronze .podium__pillar { height: 44px; }
+
+.podium__place--gold { width: 176px; }
+.podium__place--gold .podium__avatar { width: 92px; height: 92px; font-size: 30px; }
+
+.podium__place--you { position: relative; }
+.podium__place--you .podium__avatar { box-shadow: 0 0 0 4px var(--pine-tint); }
+.podium__place--you::before {
+  content: "You";
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pine);
+  background: var(--pine-tint);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   Rank Cards (4–7)
+   --------------------------------------------------------------------- */
+.rank-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rank-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.rank-card__rank { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--muted); width: 28px; flex-shrink: 0; }
+.rank-card__avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--paper); border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--ink-soft); flex-shrink: 0; overflow: hidden; }
+.rank-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rank-card__username { flex: 1; font-weight: 600; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-card__tokens { font-family: var(--font-mono); font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.rank-card--you { border-color: var(--pine); box-shadow: 0 0 0 3px var(--pine-tint), var(--shadow-card); }
+.rank-card--you .rank-card__rank, .rank-card--you .rank-card__tokens { color: var(--pine-dark); }
+
+@media (max-width: 700px) {
+  .rules-card-row { grid-template-columns: 1fr; }
+  .hero-banner { padding: 40px 20px 48px; }
+  .podium { gap: 10px; }
+  .podium__place { width: 30%; }
+  .podium__place--gold { width: 34%; }
+  .podium__place--gold .podium__avatar { width: 68px; height: 68px; font-size: 22px; }
+  .podium__avatar { width: 56px; height: 56px; font-size: 18px; }
+  .podium__username { font-size: 12px; }
+  .rank-card { padding: 10px 14px; gap: 10px; }
+}
+
+/* =====================================================================
+   Leaderboard — Full Rankings View (Dev 4 scope)
+   ===================================================================== */
+
 /* Base Container */
 .full-rankings-container {
     background-color: #0a0a0a;
@@ -5,11 +264,8 @@
     font-family: 'Inter', sans-serif;
     padding: 30px;
     border-radius: 16px;
-    
-    /* NEW INTEGRATION UPDATES: */
     width: 100%;
     box-sizing: border-box; 
-    /* Removed max-width and margin auto so it fills the parent container perfectly */
 }
 
 /* Header & Buttons */
@@ -19,164 +275,41 @@
     align-items: center;
     margin-bottom: 30px;
 }
-.rankings-header h2 {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 0;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-}
-.back-btn {
-    background-color: #1a1a1a;
-    border: 1px solid #333;
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 20px; /* Pill shape */
-    cursor: pointer;
-    font-size: 13px;
-    transition: 0.2s;
-}
+.rankings-header h2 { font-size: 22px; font-weight: 600; margin: 0; position: absolute; left: 50%; transform: translateX(-50%); }
+.back-btn { background-color: #1a1a1a; border: 1px solid #333; color: #fff; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; }
 .back-btn:hover { background-color: #2a2a2a; }
 
 /* Search Bar */
-.search-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.search-bar {
-    background-color: #1a1a1a;
-    border: 1px solid #333;
-    color: #fff;
-    padding: 10px 36px 10px 16px; /* Space for icon */
-    border-radius: 20px;
-    outline: none;
-    font-size: 13px;
-    width: 200px;
-}
-.search-icon {
-    position: absolute;
-    right: 12px;
-    color: #888;
-}
+.search-wrapper { position: relative; display: flex; align-items: center; }
+.search-bar { background-color: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px 36px 10px 16px; border-radius: 20px; outline: none; font-size: 13px; width: 200px; }
+.search-icon { position: absolute; right: 12px; color: #888; }
 
 /* Filter Pills */
-.rankings-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-.filter-pills-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-}
-.filter-pills {
-    background-color: #1a1a1a;
-    border-radius: 30px;
-    padding: 4px;
-    display: inline-flex;
-    gap: 4px;
-}
-.filter-pills .pill {
-    background: transparent;
-    border: none;
-    color: #888;
-    padding: 8px 20px;
-    border-radius: 24px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: 0.3s;
-}
-.filter-pills .pill.active {
-    background-color: #e62020;
-    color: #fff;
-}
-.member-count {
-    color: #ccc;
-    font-size: 13px;
-}
-.member-count span {
-    font-weight: bold;
-    color: #fff;
-}
+.rankings-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.filter-pills-container { flex: 1; display: flex; justify-content: center; }
+.filter-pills { background-color: #1a1a1a; border-radius: 30px; padding: 4px; display: inline-flex; gap: 4px; }
+.filter-pills .pill { background: transparent; border: none; color: #888; padding: 8px 20px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.3s; }
+.filter-pills .pill.active { background-color: #e62020; color: #fff; }
+.member-count { color: #ccc; font-size: 13px; }
+.member-count span { font-weight: bold; color: #fff; }
 
 /* Rankings Table - Critical Fixes for Border Radius */
-.rankings-table {
-    width: 100%;
-    border-collapse: separate; /* Allows border-radius on rows */
-    border-spacing: 0;
-    text-align: left;
-}
-.rankings-table th {
-    color: #888;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 16px;
-    border-bottom: 1px solid #222;
-}
-.rankings-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid #1a1a1a;
-    vertical-align: middle;
-    font-size: 14px;
-}
-.rankings-table tr:last-child td {
-    border-bottom: none; /* Remove bottom border for last standard row */
-}
+.rankings-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+.rankings-table th { color: #888; font-size: 11px; font-weight: 600; text-transform: uppercase; padding: 16px; border-bottom: 1px solid #222; }
+.rankings-table td { padding: 12px 16px; border-bottom: 1px solid #1a1a1a; vertical-align: middle; font-size: 14px; }
+.rankings-table tr:last-child td { border-bottom: none; }
 
 /* Typography & Avatars */
-.member-col {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-}
-.avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-.online-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #4caf50;
-    border: 2px solid #000;
-    border-radius: 50%;
-    position: absolute;
-    left: 26px;
-    bottom: -2px;
-}
-.tokens-col {
-    color: #e62020;
-    font-weight: bold;
-}
-.rank-col {
-    font-weight: bold;
-    font-size: 15px;
-}
+.member-col { display: flex; align-items: center; gap: 12px; position: relative; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.online-dot { width: 10px; height: 10px; background-color: #4caf50; border: 2px solid #000; border-radius: 50%; position: absolute; left: 26px; bottom: -2px; }
+.tokens-col { color: #e62020; font-weight: bold; }
+.rank-col { font-weight: bold; font-size: 15px; }
 
 /* Badges */
-.badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 700;
-    display: inline-block;
-}
-.badge.king, .badge.queen {
-    border: 1px solid #d4af37;
-    color: #d4af37;
-}
-.badge.member {
-    border: 1px solid #444;
-    color: #aaa;
-}
+.badge { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; display: inline-block; }
+.badge.king, .badge.queen { border: 1px solid #d4af37; color: #d4af37; }
+.badge.member { border: 1px solid #444; color: #aaa; }
 
 /* Trend Arrows */
 .trend-col { font-size: 16px; font-weight: bold; }
@@ -185,124 +318,31 @@
 .trend-col.down { color: #f44336; }
 
 /* The "Your Rank" Highlight Row */
-.spacer-row td {
-    padding: 4px; /* Space between normal list and highlight row */
-    border: none;
-}
-.highlight-row {
-    background-color: rgba(230, 32, 32, 0.08);
-}
-.highlight-row td {
-    border-top: 1px solid #e62020;
-    border-bottom: 1px solid #e62020;
-    border-bottom: 1px solid #e62020 !important; 
-}
-.highlight-row td:first-child {
-    border-left: 1px solid #e62020;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-}
-.highlight-row td:last-child {
-    border-right: 1px solid #e62020;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-}
-.highlight-text {
-    color: #e62020;
-    font-size: 11px;
-    line-height: 1.4;
-}
-.highlight-text strong {
-    font-size: 15px;
-}
+.spacer-row td { padding: 4px; border: none; }
+.highlight-row { background-color: rgba(230, 32, 32, 0.08); }
+.highlight-row td { border-top: 1px solid #e62020; border-bottom: 1px solid #e62020; border-bottom: 1px solid #e62020 !important; }
+.highlight-row td:first-child { border-left: 1px solid #e62020; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+.highlight-row td:last-child { border-right: 1px solid #e62020; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+.highlight-text { color: #e62020; font-size: 11px; line-height: 1.4; }
+.highlight-text strong { font-size: 15px; }
 
 /* Pagination */
-.pagination-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 30px;
-}
-.page-btn, .page-num {
-    background-color: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    color: #ccc;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-}
-.page-num.active {
-    background-color: #e62020;
-    border-color: #e62020;
-    color: #fff;
-}
-.dots {
-    color: #888;
-}
-/* =========================================
-   Responsive Design & Mobile Layout Fixes
-   ========================================= */
+.pagination-wrapper { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 30px; }
+.page-btn, .page-num { background-color: #1a1a1a; border: 1px solid #2a2a2a; color: #ccc; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+.page-num.active { background-color: #e62020; border-color: #e62020; color: #fff; }
+.dots { color: #888; }
 
-/* Ensure the table can scroll sideways on small screens without breaking the page layout */
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-bottom: 20px;
-}
+/* Responsive Design & Mobile Layout Fixes */
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
 
-/* Media Query for Tablets and Mobile Devices */
 @media (max-width: 850px) {
-    .full-rankings-container {
-        padding: 16px;
-        border-radius: 0; /* Often better to remove outer border-radius on mobile */
-    }
-
-    /* Stack the header elements */
-    .rankings-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-        position: relative;
-    }
-
-    .rankings-header h2 {
-        position: static;
-        transform: none;
-        font-size: 20px;
-    }
-
-    .search-wrapper, .search-bar {
-        width: 100%;
-    }
-
-    /* Stack the controls and filter pills */
-    .rankings-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .filter-pills-container {
-        width: 100%;
-        justify-content: flex-start;
-        overflow-x: auto; /* Allow pills to scroll if there are too many */
-        padding-bottom: 5px;
-    }
-
-    .filter-pills {
-        white-space: nowrap; /* Keep pills in a single line */
-    }
-
-    /* Adjust pagination for mobile */
-    .pagination-wrapper {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
-    .page-num.hide-mobile {
-        display: none; /* Optional: hide some middle page numbers on tiny screens */
-    }
+    .full-rankings-container { padding: 16px; border-radius: 0; }
+    .rankings-header { flex-direction: column; align-items: flex-start; gap: 16px; position: relative; }
+    .rankings-header h2 { position: static; transform: none; font-size: 20px; }
+    .search-wrapper, .search-bar { width: 100%; }
+    .rankings-controls { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .filter-pills-container { width: 100%; justify-content: flex-start; overflow-x: auto; padding-bottom: 5px; }
+    .filter-pills { white-space: nowrap; }
+    .pagination-wrapper { flex-wrap: wrap; gap: 8px; }
+    .page-num.hide-mobile { display: none; }
 }

@@ -26,7 +26,7 @@ if [ "$MISSING" -eq 1 ]; then
 fi
 
 # Check required PHP extensions
-php -m 2>/dev/null | grep -qi "^mysqli$" || {
+php -r 'exit(extension_loaded("mysqli") ? 0 : 1);' || {
     echo >&2 "❌ PHP mysqli extension is required but not enabled."
     echo >&2 "   On macOS: brew install php && brew services restart php"
     echo >&2 "   On Ubuntu: sudo apt install php-mysql"
