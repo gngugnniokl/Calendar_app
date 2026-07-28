@@ -106,7 +106,118 @@
 
 ---
 
-## 🚀 Coordination Checklist (Day 1, 15-Minute Sync)
+## � Execution Order & Merge Conflict Prevention
+
+Below is the **strict coding order** each developer must follow. Since all devs work independently, this sequence ensures no two people edit the same file at the same time.
+
+---
+
+### Phase 1 — Foundation (Can Start Simultaneously)
+
+| Priority | Developer | Reason |
+|----------|-----------|--------|
+| 🥇 1st | **Dev 1 – Database Engineer** | Zero file overlap with anyone. Only touches `sql/` files and external crontab. Everyone else needs the DB tables to exist before meaningful integration testing. |
+| 🥇 1st | **Dev 6 – Core Platform Integrator** | Touches `index.php` and `container.phtml` — files no other dev touches. Creates the routing skeleton (`leaderboard.php`) that all other work plugs into. Must merge first so the page actually loads. |
+
+> **Why parallel:** Dev 1 only edits `sql/` files. Dev 6 only edits `index.php`, `container.phtml`, and creates `leaderboard.php`. Zero file overlap = zero merge conflict.
+
+---
+
+### Phase 2 — Backend + First Frontend (Start After Phase 1 Merges)
+
+| Priority | Developer | Reason |
+|----------|-----------|--------|
+| 🥈 2nd | **Dev 2 – Backend API Developer** | Creates `xhr/leaderboard.php` (new file, no conflict). May append to `includes/functions.php` — this is safe because Dev 6 does NOT touch this file. Must be merged before Dev 5 can do real API integration. |
+| 🥈 2nd | **Dev 3 – Frontend UI Developer A (Top 7)** | Creates new `.phtml` files AND **creates** `themes/wondertag/css/leaderboard.css`. Since this file doesn't exist yet, Dev 3 must be the one to create it first. Dev 4 appends to it later. |
+
+> **Why parallel:** Dev 2 works in `xhr/` and `includes/`. Dev 3 works in `themes/wondertag/layout/leaderboard/` and `themes/wondertag/css/`. Zero file overlap = zero merge conflict.
+
+---
+
+### Phase 3 — Second Frontend (Start After Dev 3 Merges)
+
+| Priority | Developer | Reason |
+|----------|-----------|--------|
+| 🥉 3rd | **Dev 4 – Frontend UI Developer B (Full Rankings)** | Creates `full_rankings.phtml` (new file, safe). **Appends** CSS to `leaderboard.css` — MUST wait for Dev 3's merge so the file exists and there's no concurrent write conflict on the same file. |
+
+> **Critical rule:** Dev 4 writes CSS **only at the bottom** of `leaderboard.css` under a clear comment block:
+> ```css
+> /* ═══════════════════════════════════════════
+>    FULL RANKINGS VIEW — Dev 4 Styles Below
+>    ═══════════════════════════════════════════ */
+> ```
+
+---
+
+### Phase 4 — JavaScript Glue (Start After Dev 2, 3, 4 All Merge)
+
+| Priority | Developer | Reason |
+|----------|-----------|--------|
+| 🏁 4th (Last) | **Dev 5 – Frontend Interactive Developer** | Creates `leaderboard.js` (new file, safe). But **cannot write meaningful code** until: (a) Dev 2's API endpoints exist to fetch from, (b) Dev 3 & 4's HTML element IDs exist to target. This dev goes last to avoid throwaway/placeholder code. |
+
+> **Why last:** Dev 5's entire job is connecting Dev 2's API to Dev 3/4's DOM. Starting earlier means guessing at selectors and endpoint shapes — leading to rework.
+
+---
+
+### Visual Timeline
+
+```
+DAY 1          DAY 2          DAY 3          DAY 4
+─────────────────────────────────────────────────────
+[Dev 1 ████]   merge ✓
+[Dev 6 ████]   merge ✓
+               [Dev 2 ████]   merge ✓
+               [Dev 3 ████]   merge ✓
+                              [Dev 4 ████]   merge ✓
+                                             [Dev 5 ████] merge ✓
+```
+
+---
+
+### Shared File Conflict Matrix
+
+| File | Dev 1 | Dev 2 | Dev 3 | Dev 4 | Dev 5 | Dev 6 |
+|------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+| `sql/leaderboard-schema.sql` | ✏️ | | | | | |
+| `xhr/leaderboard.php` | | ✏️ | | | | |
+| `includes/functions.php` | | ✏️ | | | | |
+| `themes/.../css/leaderboard.css` | | | ✏️ | ⚠️ | | |
+| `themes/.../layout/leaderboard/content.phtml` | | | ✏️ | | | |
+| `themes/.../layout/leaderboard/top7.phtml` | | | ✏️ | | | |
+| `themes/.../layout/leaderboard/full_rankings.phtml` | | | | ✏️ | | |
+| `themes/.../javascript/leaderboard.js` | | | | | ✏️ | |
+| `index.php` | | | | | | ✏️ |
+| `themes/.../layout/container.phtml` | | | | | | ✏️ |
+| `leaderboard.php` (root) | | | | | | ✏️ |
+
+> ⚠️ = Only conflict risk. Resolved by enforcing Phase 3 ordering (Dev 4 waits for Dev 3's merge).
+
+---
+
+### Merge Order Summary (Strictly Sequential PR Merges)
+
+```
+1. Dev 1 → merge to main
+2. Dev 6 → merge to main  (can be same time as Dev 1)
+3. Dev 2 → merge to main
+4. Dev 3 → merge to main  (can be same time as Dev 2)
+5. Dev 4 → merge to main  (MUST wait for Dev 3)
+6. Dev 5 → merge to main  (MUST wait for Dev 2 + Dev 3 + Dev 4)
+```
+
+---
+
+### Rules to Enforce
+
+1. **No dev touches a file outside their column** in the conflict matrix above.
+2. **Dev 3 creates `leaderboard.css`; Dev 4 only appends below a separator comment.**
+3. **Dev 5 does NOT start coding until Dev 2 provides the final JSON contract** (hardcoded mock is acceptable for Day 1 local work, but PR must target real endpoints).
+4. **Every PR must rebase on `main`** before merge — never merge without pulling latest.
+5. **Branch naming convention:** `feature/leaderboard-dev{N}-{short-desc}` (e.g., `feature/leaderboard-dev3-top7-ui`).
+
+---
+
+## �🚀 Coordination Checklist (Day 1, 15-Minute Sync)
 
 To ensure zero blocks, the team must agree on the following before coding:
 

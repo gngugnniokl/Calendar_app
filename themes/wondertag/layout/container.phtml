@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="themes/wondertag/css/internship-calendar.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="themes/wondertag/css/leaderboard.css?v=<?php echo time(); ?>">
     <script>
         (function() {
             var savedTheme = localStorage.getItem('theme');
@@ -20,6 +21,9 @@
             }
         })();
     </script>
+    <?php if (!empty($wo['loggedin'])): ?>
+    <script>window.TRIBBBAL_USER_ID = <?php echo (int)($wo['user']['user_id'] ?? 0); ?>;</script>
+    <?php endif; ?>
 </head>
 <body>
     <header class="site-header">
@@ -104,6 +108,12 @@
                         <span class="nav-label">Nudges</span>
                     </li>
                 </a>
+                <a href="?link1=leaderboard"  style="color: inherit; text-decoration: none;">
+                    <li class="nav-icon bg-gold">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span class="nav-label">Leaderboard</span>
+                    </li>
+                </a>
             </ul>
         </aside>
         <?php endif; ?>
@@ -115,6 +125,24 @@
 
     <?php include __DIR__ . '/internship_calendar/includes/event-modal.phtml'; ?>
 
+    <?php if (!empty($wo['loggedin'])): ?>
+    <!-- Sticky Leaderboard Progress Footer -->
+    <footer class="leaderboard-progress-footer" id="leaderboard-progress-footer">
+        <div class="progress-footer-inner">
+            <a href="?link1=leaderboard" class="progress-footer-link">
+                <i class="fa-solid fa-trophy progress-footer-icon"></i>
+                <span class="progress-footer-label">Your Tokens:</span>
+                <span class="progress-footer-tokens" id="lb-user-tokens">--</span>
+            </a>
+            <div class="progress-footer-bar-wrap">
+                <div class="progress-footer-bar" id="lb-progress-bar" style="width: 0%;"></div>
+            </div>
+            <span class="progress-footer-rank" id="lb-user-rank">Rank --</span>
+        </div>
+    </footer>
+    <?php endif; ?>
+
     <script src="themes/wondertag/javascript/internship-calendar.js?v=<?php echo time(); ?>"></script>
+    <script src="themes/wondertag/javascript/leaderboard.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
