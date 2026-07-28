@@ -11,7 +11,7 @@ $dayOptions = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 <form class="search-form" method="GET" action="" id="event-filters-form">
     <input type="hidden" name="link1" value="internship_calendar">
     <div class="filter-row">
-        <div class="filter-group">
+        <div class="filter-group filter-group-search">
             <label for="filter-search">Search</label>
             <input id="filter-search" type="text" name="search" placeholder="Search events..." class="js-search-input" value="<?php echo $searchQuery; ?>">
         </div>
@@ -48,11 +48,13 @@ $dayOptions = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
     </div>
 
     <div class="filter-actions">
-        <button type="submit" class="btn btn-primary" id="filter-apply">Apply Filters</button>
-        <a href="?link1=internship_calendar" class="btn btn-secondary" id="filter-clear">Clear Filters</a>
+        <div class="filter-actions-left">
+            <button type="submit" class="btn btn-primary" id="filter-apply">Apply Filters</button>
+            <a href="?link1=internship_calendar" class="btn btn-ghost" id="filter-clear">Clear Filters</a>
+        </div>
         <div class="filter-actions-right">
-            <a href="?link1=internship_calendar&export=excel" class="btn btn-primary btn-match-new-event">Export Excel</a>
-            <button type="button" class="btn btn-primary btn-match-new-event js-open-create-modal">+ New Event</button>
+            <a href="?link1=internship_calendar&export=excel" class="btn btn-ghost">Export Excel</a>
+            <button type="button" class="btn btn-primary js-open-create-modal">+ New Event</button>
         </div>
     </div>
 </form>

@@ -1,0 +1,3 @@
+# Run every 5 minutes to refresh leaderboard ranks.
+*/5 * * * * mysql -u root -p'password' -D internship_calendar -e "CALL recalculateRanks();"
+

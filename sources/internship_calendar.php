@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 $page_title = 'Calendar';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
-
 // Check if any specific view or filters are requested
 $has_filters = !empty($_GET['week']) || !empty($_GET['search']) || !empty($_GET['day']) || !empty($_GET['from']) || !empty($_GET['to']);
 
@@ -43,16 +40,12 @@ if (!empty($_GET['export']) && $_GET['export'] === 'excel') {
 }
 
 if (!$has_filters) {
-    // Show Home Page
-    $wo = [];
-    $wo['page_title']   = $page_title;
-    $wo['weeks']        = Wo_GetInternshipCalendarWeeks($conn);
-    $wo['current_week'] = Wo_GetCurrentInternshipWeek($conn);
-    
-    $wo['content'] = Wo_LoadPage('internship_calendar/home');
+    // Redirect to Current Week by default
+    $current = Wo_GetCurrentInternshipWeek($conn);
+    header("Location: ?link1=internship_calendar&week={$current}");
+    exit();
 } else {
     // Fetch data via functions
-    $wo = [];
     $wo['page_title']      = $page_title;
     $wo['week']            = $week;
     $wo['is_all_weeks']    = $is_all_weeks;

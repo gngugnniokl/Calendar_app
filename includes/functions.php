@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once 'timeline_calendar.php';
+
 /**
  * Reusable helper functions shared across every page.
  * Each one is commented with the core PHP builtin(s) it relies on,
@@ -195,7 +197,7 @@ function Wo_GetCurrentInternshipWeek(mysqli $conn): int
  */
 function Wo_GetInternshipCalendarEventsByWeek(mysqli $conn, int $week): array
 {
-    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE week = ? ORDER BY event_date ASC");
+    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE week = ? ORDER BY e.event_date ASC");
     mysqli_stmt_bind_param($stmt, "i", $week);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -334,41 +336,47 @@ function Wo_GetInternshipCalendarEvents(mysqli $conn, array $filters = []): arra
     $from   = isset($filters['from']) ? trim((string) $filters['from']) : '';
     $to     = isset($filters['to']) ? trim((string) $filters['to']) : '';
 
-    $sql    = "SELECT * FROM calendar_events WHERE 1=1";
-    $types  = "";
-    $params = [];
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    // Select everything from calendar_events, but correctly alias 'completed' against completions tracking mapper
+    $sql    = "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed FROM calendar_events e 
+               LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+               WHERE (e.user_id = ? OR e.user_id IS NULL)";
+    $types  = "ii";
+    $params = [$user_id, $user_id];
 
     if (!empty($week)) {
-        $sql .= " AND week = ?";
+        $sql .= " AND e.week = ?";
         $types .= "i";
         $params[] = $week;
     }
 
     if ($search !== '') {
-        $sql .= " AND title LIKE ?";
+        $sql .= " AND e.title LIKE ?";
         $types .= "s";
         $params[] = "%" . $search . "%";
     }
 
     if ($day !== '') {
-        $sql .= " AND day = ?";
+        $sql .= " AND e.day = ?";
         $types .= "s";
         $params[] = $day;
     }
 
     if ($from !== '') {
-        $sql .= " AND event_date >= ?";
+        $sql .= " AND e.event_date >= ?";
         $types .= "s";
         $params[] = $from;
     }
 
     if ($to !== '') {
-        $sql .= " AND event_date <= ?";
+        $sql .= " AND e.event_date <= ?";
         $types .= "s";
         $params[] = $to;
     }
 
-    $sql .= " ORDER BY event_date ASC";
+    $sql .= " ORDER BY e.event_date ASC";
 
     $stmt = mysqli_prepare($conn, $sql);
 
@@ -396,8 +404,17 @@ function Wo_GetInternshipCalendarEvents(mysqli $conn, array $filters = []): arra
  */
 function Wo_GetInternshipCalendarStats(mysqli $conn): array
 {
-    $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
-    $result = mysqli_query($conn, $sql);
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    $stmt = mysqli_prepare($conn, "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed 
+                                  FROM calendar_events e 
+                                  LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+                                  WHERE (e.user_id = ? OR e.user_id IS NULL) 
+                                  ORDER BY e.week ASC, e.event_date ASC");
+    mysqli_stmt_bind_param($stmt, 'ii', $user_id, $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     $events = [];
     if ($result) {
@@ -453,8 +470,14 @@ function Wo_GetInternshipCalendarStats(mysqli $conn): array
  */
 function Wo_GetInternshipCalendarEventById(mysqli $conn, int $id): ?array
 {
-    $stmt = mysqli_prepare($conn, "SELECT * FROM calendar_events WHERE id = ? LIMIT 1");
-    mysqli_stmt_bind_param($stmt, "i", $id);
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    $stmt = mysqli_prepare($conn, "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed 
+                                  FROM calendar_events e 
+                                  LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+                                  WHERE e.id = ? AND (e.user_id = ? OR e.user_id IS NULL) LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $id, $user_id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $row = mysqli_fetch_assoc($result);
@@ -539,6 +562,7 @@ function Wo_LoadPage($page_url) {
     }
     return "Template not found: " . $path;
 }
+
 /**
  * Wo_GetInternshipCalendarWeeks() — all events grouped by week number,
  * used for the overview/home page. Keyed array: [week_num => [events]].
@@ -548,8 +572,17 @@ function Wo_LoadPage($page_url) {
  */
 function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
 {
-    $sql = "SELECT * FROM calendar_events ORDER BY week ASC, event_date ASC";
-    $result = mysqli_query($conn, $sql);
+    global $wo;
+    $user_id = !empty($wo['user']['user_id']) ? (int)$wo['user']['user_id'] : 0;
+    
+    $stmt = mysqli_prepare($conn, "SELECT e.*, IF(c.id IS NOT NULL, 1, 0) AS completed 
+                                  FROM calendar_events e 
+                                  LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ? 
+                                  WHERE (e.user_id = ? OR e.user_id IS NULL) 
+                                  ORDER BY e.week ASC, e.event_date ASC");
+    mysqli_stmt_bind_param($stmt, 'ii', $user_id, $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     $weeks = [];
     if ($result) {
@@ -559,4 +592,497 @@ function Wo_GetInternshipCalendarWeeks(mysqli $conn): array
     }
 
     return $weeks;
+}
+
+/**
+ * Wo_SendNudge() — inserts a single outbound nudge if the sender and
+ * receiver are different users and the pair does not already exist.
+ *
+ * @param mysqli $conn
+ * @param int $sender
+ * @param int $receiver
+ * @return bool
+ */
+function Wo_SendNudge(mysqli $conn, int $sender, int $receiver): bool
+{
+    if ($sender <= 0 || $receiver <= 0 || $sender === $receiver) {
+        return false;
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
+    );
+
+    if (!$stmt) {
+        return false;
+    }
+
+    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
+    $success = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    return $success;
+}
+
+/**
+ * Wo_NudgeBack() — removes the incoming nudge and creates a new one in
+ * the opposite direction inside a single SQL transaction.
+ *
+ * @param mysqli $conn
+ * @param int $nudge_id
+ * @param int $me
+ * @param int $original_sender
+ * @return bool
+ */
+function Wo_NudgeBack(mysqli $conn, int $nudge_id, int $me, int $original_sender): bool
+{
+    if ($nudge_id <= 0 || $me <= 0 || $original_sender <= 0 || $me === $original_sender) {
+        return false;
+    }
+
+    mysqli_begin_transaction($conn);
+
+    try {
+        $deleteStmt = mysqli_prepare(
+            $conn,
+            "DELETE FROM calendar_nudges
+             WHERE id = ? AND sender_id = ? AND receiver_id = ?"
+        );
+
+        if (!$deleteStmt) {
+            throw new RuntimeException('Failed to prepare delete statement.');
+        }
+
+        mysqli_stmt_bind_param($deleteStmt, 'iii', $nudge_id, $original_sender, $me);
+        if (!mysqli_stmt_execute($deleteStmt) || mysqli_stmt_affected_rows($deleteStmt) < 1) {
+            mysqli_stmt_close($deleteStmt);
+            throw new RuntimeException('Incoming nudge not found.');
+        }
+        mysqli_stmt_close($deleteStmt);
+
+        $insertStmt = mysqli_prepare(
+            $conn,
+            "INSERT INTO calendar_nudges (sender_id, receiver_id) VALUES (?, ?)"
+        );
+
+        if (!$insertStmt) {
+            throw new RuntimeException('Failed to prepare insert statement.');
+        }
+
+        mysqli_stmt_bind_param($insertStmt, 'ii', $me, $original_sender);
+        if (!mysqli_stmt_execute($insertStmt)) {
+            mysqli_stmt_close($insertStmt);
+            throw new RuntimeException('Failed to insert return nudge.');
+        }
+        mysqli_stmt_close($insertStmt);
+
+        mysqli_commit($conn);
+        return true;
+    } catch (Throwable $exception) {
+        mysqli_rollback($conn);
+        return false;
+    }
+}
+
+/**
+ * Wo_GetNudgesForUser() — returns all incoming nudges with sender
+ * profile data attached.
+ *
+ * @param mysqli $conn
+ * @param int $user_id
+ * @return array<int, array<string, mixed>>
+ */
+function Wo_GetNudgesForUser(mysqli $conn, int $user_id): array
+{
+    if ($user_id <= 0) {
+        return [];
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT
+            n.id,
+            n.sender_id,
+            n.receiver_id,
+            n.created_at,
+            u.username,
+            u.name,
+            u.avatar
+         FROM calendar_nudges n
+         INNER JOIN Wo_Users u ON u.user_id = n.sender_id
+         WHERE n.receiver_id = ?
+         ORDER BY n.created_at DESC, n.id DESC"
+    );
+
+    if (!$stmt) {
+        return [];
+    }
+
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $nudges = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $nudges[] = $row;
+        }
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $nudges;
+}
+
+/**
+ * Wo_GetTimelineUser() — looks up a user by username from the
+ * Wo_Users table. Returns null if not found.
+ * Uses a prepared statement to avoid injection.
+ *
+ * @param mysqli $conn
+ * @param string $username
+ * @return array<string, mixed>|null
+ */
+function Wo_GetTimelineUser(mysqli $conn, string $username): ?array
+{
+    $query = "
+        SELECT 
+            user_id, 
+            username, 
+            CONCAT(first_name, ' ', last_name) AS name, 
+            about, 
+            avatar, 
+            cover,
+            profile_color,
+            CASE 
+                WHEN admin = '1' THEN 'admin'
+                WHEN admin = '2' THEN 'mentor'
+                ELSE 'intern'
+            END AS role
+        FROM Wo_Users 
+        WHERE username = ? 
+        LIMIT 1
+    ";
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ?: null;
+}
+
+/* =====================================================================
+   Authentication Functions
+   ===================================================================== */
+
+function Wo_Secure(mysqli $conn, string $string): string
+{
+    return mysqli_real_escape_string($conn, htmlspecialchars(trim($string), ENT_QUOTES, 'UTF-8'));
+}
+
+function Wo_LoadConfig(mysqli $conn): array
+{
+    $config = [];
+    try {
+        $result = mysqli_query($conn, "SELECT name, value FROM Wo_Config");
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $config[$row['name']] = $row['value'];
+            }
+        }
+    } catch (\Exception $e) {
+        // Table may not exist yet during initial setup
+    }
+    return $config;
+}
+
+function Wo_IsLogged(mysqli $conn): bool
+{
+    if (!empty($_SESSION['user_id'])) {
+        $uid = Wo_GetUserFromSessionID($conn, $_SESSION['user_id']);
+        if ($uid !== false) {
+            return true;
+        }
+    }
+    if (!empty($_COOKIE['user_id'])) {
+        $uid = Wo_GetUserFromSessionID($conn, $_COOKIE['user_id']);
+        if ($uid !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function Wo_GetUserFromSessionID(mysqli $conn, string $session_id): int|false
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_AppsSessions WHERE session_id = ? LIMIT 1");
+    if (!$stmt) {
+        return false;
+    }
+    mysqli_stmt_bind_param($stmt, "s", $session_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ? (int) $row['user_id'] : false;
+}
+
+function Wo_Login(mysqli $conn, string $username, string $password): bool
+{
+    $stmt = mysqli_prepare($conn, "SELECT * FROM Wo_Users WHERE (username = ? OR email = ?) AND active = 1 AND banned = 0 LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $user = mysqli_fetch_assoc($result);
+    if (!$user) {
+        return false;
+    }
+    return password_verify($password, $user['password']);
+}
+
+function Wo_CreateLoginSession(mysqli $conn, int $user_id): string
+{
+    $hash = sha1((string) random_int(100000000, 999999999)) . md5(microtime()) . random_int(10000000, 99999999);
+    // Delete any existing session with same hash
+    $stmt = mysqli_prepare($conn, "DELETE FROM Wo_AppsSessions WHERE session_id = ?");
+    mysqli_stmt_bind_param($stmt, "s", $hash);
+    mysqli_stmt_execute($stmt);
+    // Insert new session
+    $time = time();
+    $platform = 'web';
+    $stmt = mysqli_prepare($conn, "INSERT INTO Wo_AppsSessions (user_id, session_id, platform, time) VALUES (?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "issi", $user_id, $hash, $platform, $time);
+    mysqli_stmt_execute($stmt);
+    return $hash;
+}
+
+function Wo_UserData(mysqli $conn, int $user_id): ?array
+{
+    $stmt = mysqli_prepare($conn, "SELECT * FROM Wo_Users WHERE user_id = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    if (!$row) {
+        return null;
+    }
+    $row['name'] = $row['first_name'] . ' ' . $row['last_name'];
+    $row['role'] = match ($row['admin']) {
+        '1' => 'admin',
+        '2' => 'mentor',
+        default => 'intern',
+    };
+    return $row;
+}
+
+function Wo_RegisterUser(mysqli $conn, array $data): int|false
+{
+    if (empty($data['username']) || empty($data['email']) || empty($data['password'])) {
+        return false;
+    }
+    // Check username uniqueness
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE username = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $data['username']);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if (mysqli_fetch_assoc($result)) {
+        return false;
+    }
+    // Check email uniqueness
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $data['email']);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if (mysqli_fetch_assoc($result)) {
+        return false;
+    }
+    // Hash password and insert
+    $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
+    $first_name = $data['first_name'] ?? '';
+    $last_name = $data['last_name'] ?? '';
+    $stmt = mysqli_prepare($conn, "INSERT INTO Wo_Users (username, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "sssss", $data['username'], $data['email'], $hashed, $first_name, $last_name);
+    if (mysqli_stmt_execute($stmt)) {
+        return (int) mysqli_insert_id($conn);
+    }
+    return false;
+}
+
+function Wo_IsAdmin(): bool
+{
+    global $wo;
+    return ($wo['loggedin'] ?? false) && (($wo['user']['admin'] ?? '0') === '1');
+}
+
+function Wo_IsModerator(): bool
+{
+    global $wo;
+    return ($wo['loggedin'] ?? false) && (($wo['user']['admin'] ?? '0') === '2');
+}
+
+function Wo_UserExists(mysqli $conn, string $username): bool
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE username = ? OR email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    return (bool) mysqli_fetch_assoc($result);
+}
+
+function Wo_LastSeen(mysqli $conn, int $user_id): void
+{
+    $now = time();
+    $stmt = mysqli_prepare($conn, "UPDATE Wo_Users SET lastseen = ? WHERE user_id = ?");
+    mysqli_stmt_bind_param($stmt, "ii", $now, $user_id);
+    mysqli_stmt_execute($stmt);
+}
+
+// Fixed comment structure directly here
+/**
+ * Wo_ResetPassword() — updates user's password.
+ */
+function Wo_ResetPassword(mysqli $conn, int $user_id, string $new_password): bool
+{
+    $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+    $stmt = mysqli_prepare($conn, "UPDATE Wo_Users SET password = ? WHERE user_id = ?");
+    mysqli_stmt_bind_param($stmt, "si", $hashed, $user_id);
+    return mysqli_stmt_execute($stmt);
+}
+
+function Wo_UserIdForLogin(mysqli $conn, string $username): int|false
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE (username = ? OR email = ?) AND active = 1 LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return $row ? (int) $row['user_id'] : false;
+}
+
+function Wo_SetLoginWithSession(mysqli $conn, string $email): void
+{
+    $stmt = mysqli_prepare($conn, "SELECT user_id FROM Wo_Users WHERE email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    if ($row) {
+        $session = Wo_CreateLoginSession($conn, (int) $row['user_id']);
+        $_SESSION['user_id'] = $session;
+    }
+}
+
+function Wo_ValidateCsrf(): bool
+{
+    return isset($_POST['csrf_token'], $_SESSION['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token'];
+}
+
+function WoCanLogin(mysqli $conn): bool
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $window = time() - 900; // 15 minutes
+    $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as cnt FROM Wo_Bad_Login WHERE ip = ? AND time > ?");
+    if (!$stmt) {
+        return true;
+    }
+    mysqli_stmt_bind_param($stmt, "si", $ip, $window);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    return ($row['cnt'] ?? 0) < 5;
+}
+
+function WoAddBadLoginLog(mysqli $conn): void
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $now = time();
+    $stmt = mysqli_prepare($conn, "INSERT INTO Wo_Bad_Login (ip, time) VALUES (?, ?)");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "si", $ip, $now);
+        mysqli_stmt_execute($stmt);
+    }
+}
+
+function Wo_DeleteBadLogins(mysqli $conn): void
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $stmt = mysqli_prepare($conn, "DELETE FROM Wo_Bad_Login WHERE ip = ?");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "s", $ip);
+        mysqli_stmt_execute($stmt);
+    }
+}
+/**
+ * Wo_IsNudged() — Checks if a pending nudge already exists
+ * from the sender to the receiver.
+ */
+function Wo_IsNudged(mysqli $conn, int $sender, int $receiver): bool {
+    $stmt = mysqli_prepare($conn, "SELECT id FROM calendar_nudges WHERE sender_id = ? AND receiver_id = ?");
+    mysqli_stmt_bind_param($stmt, 'ii', $sender, $receiver);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_store_result($stmt);
+    $exists = mysqli_stmt_num_rows($stmt) > 0;
+    mysqli_stmt_close($stmt);
+    return $exists;
+}
+
+/**
+ * Wo_GetUserPosts() — fetches social posts for a user
+ *
+ * @param mysqli $conn
+ * @param int $user_id
+ * @return array
+ */
+function Wo_GetUserPosts(mysqli $conn, int $user_id = 0): array {
+    if ($user_id > 0) {
+        $stmt = mysqli_prepare($conn, 
+            "SELECT p.id, p.postText, p.postFile, p.postFileName, p.postLink, p.time, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
+             FROM Wo_Posts p
+             JOIN Wo_Users u ON p.user_id = u.user_id
+             WHERE p.user_id = ? AND p.active = 1
+             ORDER BY p.time DESC"
+        );
+        mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    } else {
+        $stmt = mysqli_prepare($conn, 
+            "SELECT p.id, p.postText, p.postFile, p.postFileName, p.postLink, p.time, u.username, CONCAT(u.first_name, ' ', u.last_name) AS name, u.avatar 
+             FROM Wo_Posts p
+             JOIN Wo_Users u ON p.user_id = u.user_id
+             WHERE p.active = 1
+             ORDER BY p.time DESC"
+        );
+    }
+    
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $posts = [];
+    if ($res) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            $posts[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $posts;
+}
+
+/**
+ * Wo_GetRandomUsers() - Fetch random active users for sidebar suggestions
+ */
+function Wo_GetRandomUsers(mysqli $conn, int $current_user_id, int $limit = 5): array {
+    $stmt = mysqli_prepare($conn, "SELECT user_id, username, CONCAT(first_name, ' ', last_name) as name, avatar FROM Wo_Users WHERE active = '1' AND user_id != ? ORDER BY RAND() LIMIT ?");
+    mysqli_stmt_bind_param($stmt, 'ii', $current_user_id, $limit);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $users = [];
+    if ($res) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            // Provide fallback name if empty
+            if (trim($row['name']) === '') {
+                $row['name'] = $row['username'];
+            }
+            $users[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $users;
 }
