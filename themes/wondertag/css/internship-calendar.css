@@ -1292,6 +1292,9 @@ svg {
 .bg-purple {
   background: #9c27b0;
 }
+.bg-gold {
+  background: linear-gradient(135deg, #f5a623, #f7c948);
+}
 
 .timeline-main {
   padding: 24px;
@@ -3144,4 +3147,76 @@ svg {
   padding: 20px 40px;
   background: var(--paper);
   margin-bottom: 24px;
+}
+
+/* ═══════════════════════════════════════════
+   LEADERBOARD PROGRESS FOOTER (Dev 6)
+   ═══════════════════════════════════════════ */
+.leaderboard-progress-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--surface);
+  border-top: 1px solid var(--hairline);
+  padding: 8px 20px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.progress-footer-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.progress-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.progress-footer-icon {
+  color: #f5a623;
+  font-size: 16px;
+}
+
+.progress-footer-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--secondary-text);
+}
+
+.progress-footer-tokens {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-text);
+}
+
+.progress-footer-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--hairline);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.progress-footer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f5a623, #f7c948);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.progress-footer-rank {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--secondary-text);
+  white-space: nowrap;
 }

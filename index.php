@@ -23,6 +23,7 @@ $protected_pages = [
     'timeline',
     'nudges',
     'notifications',
+    'leaderboard',
 ];
 
 $all_pages = array_merge($public_pages, $protected_pages);
