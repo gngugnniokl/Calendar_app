@@ -8,6 +8,47 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+SETUP_LOG="/tmp/tribbbal_setup.log"
+: > "$SETUP_LOG"
+
+log_info() {
+    echo "ℹ️  $*"
+    printf '[INFO] %s\n' "$*" >> "$SETUP_LOG"
+}
+
+log_ok() {
+    echo "✅ $*"
+    printf '[OK] %s\n' "$*" >> "$SETUP_LOG"
+}
+
+log_warn() {
+    echo "⚠️  $*"
+    printf '[WARN] %s\n' "$*" >> "$SETUP_LOG"
+}
+
+log_error() {
+    echo "❌ $*" >&2
+    printf '[ERROR] %s\n' "$*" >> "$SETUP_LOG"
+}
+
+run_sql_file() {
+    local sql_file="$1"
+    local label="$2"
+
+    if [ ! -f "$sql_file" ]; then
+        log_error "$label missing: $sql_file"
+        exit 1
+    fi
+
+    log_info "Importing $label from $sql_file"
+    if mysql "${MYSQL_ARGS[@]}" < "$sql_file" >>"$SETUP_LOG" 2>&1; then
+        log_ok "$label imported successfully"
+    else
+        log_error "$label import failed. See $SETUP_LOG for details."
+        exit 1
+    fi
+}
+
 echo "📅 Setting up Tribbbal Internship Calendar Development Environment..."
 echo "--------------------------------------------------------------------------------"
 
@@ -90,39 +131,39 @@ if [ -n "$DB_PASS" ]; then
 fi
 
 if ! mysql "${MYSQL_ARGS[@]}" -e "SELECT 1;" >/dev/null 2>&1; then
-    echo "❌ Cannot connect to MySQL with the provided credentials."
-    echo "   Host: $DB_HOST | User: $DB_USER"
-    echo "   Ensure MySQL is running and your credentials in .env.local are correct."
+    log_error "Cannot connect to MySQL with the provided credentials."
+    log_error "Host: $DB_HOST | User: $DB_USER"
+    log_error "Ensure MySQL is running and your credentials in .env.local are correct."
     exit 1
 fi
 
-echo "✅ MySQL connection successful."
+log_ok "MySQL connection successful"
 
 # ==============================================================================
 # 4. Database Migration
 # ==============================================================================
 echo ""
-echo "🗄️  Running database migration (sql/internship_calendar.sql)..."
-echo "   This will DROP and recreate all tables in '${DB_NAME}'."
+log_info "Running database migration (sql/internship_calendar.sql)"
+log_info "This will DROP and recreate all tables in '${DB_NAME}'."
 
 read -p "⚠️  Continue? [Y/n]: " CONFIRM
 CONFIRM="${CONFIRM:-Y}"
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "Migration skipped."
+    log_warn "Migration skipped"
 else
-    if mysql "${MYSQL_ARGS[@]}" < sql/internship_calendar.sql; then
-        echo "✅ Database schema and seed data loaded."
-    else
-        echo "❌ Database migration failed. Check the output above for errors."
-        exit 1
-    fi
+    run_sql_file "sql/internship_calendar.sql" "Core database schema"
+
+    log_info "Importing leaderboard module database assets in order"
+    run_sql_file "sql/leaderboard_schema.sql" "Leaderboard schema"
+    run_sql_file "to-ir-project/documents/leaderboard-implementation/dummy_users.sql" "Leaderboard dummy users"
+    run_sql_file "to-ir-project/documents/leaderboard-implementation/dummy_tokens.sql" "Leaderboard dummy tokens"
 fi
 
 # ==============================================================================
 # 5. Verify Migration
 # ==============================================================================
 echo ""
-echo "🔍 Verifying database tables..."
+log_info "Verifying database tables"
 
 EXPECTED_TABLES=("Wo_Users" "calendar_events" "calendar_nudges" "Wo_Posts" "Wo_AppsSessions" "Wo_Bad_Login" "Wo_Config")
 ALL_OK=1
@@ -130,33 +171,52 @@ ALL_OK=1
 for TABLE in "${EXPECTED_TABLES[@]}"; do
     COUNT=$(mysql "${MYSQL_ARGS[@]}" -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}' AND table_name='${TABLE}';" 2>/dev/null)
     if [ "$COUNT" = "1" ]; then
-        echo "   ✅ $TABLE"
+        log_ok "$TABLE"
     else
-        echo "   ❌ $TABLE — missing!"
+        log_error "$TABLE missing"
         ALL_OK=0
     fi
 done
 
 if [ "$ALL_OK" -eq 0 ]; then
     echo ""
-    echo "⚠️  Some tables are missing. The migration may not have run or completed."
-    echo "   Re-run this script or manually execute: mysql ${DB_USER}@${DB_HOST} < sql/internship_calendar.sql"
+    log_warn "Some base tables are missing. The migration may not have run or completed."
+    log_warn "Re-run this script or manually execute: mysql ${DB_USER}@${DB_HOST} < sql/internship_calendar.sql"
+fi
+
+LEADERBOARD_TABLES=("leaderboard_config" "leaderboard_tokens" "token_transactions")
+for TABLE in "${LEADERBOARD_TABLES[@]}"; do
+    COUNT=$(mysql "${MYSQL_ARGS[@]}" -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}' AND table_name='${TABLE}';" 2>/dev/null)
+    if [ "$COUNT" = "1" ]; then
+        log_ok "$TABLE"
+    else
+        log_error "$TABLE missing"
+        ALL_OK=0
+    fi
+done
+
+PROC_COUNT=$(mysql "${MYSQL_ARGS[@]}" -N -e "SELECT COUNT(*) FROM information_schema.routines WHERE routine_schema='${DB_NAME}' AND routine_name='recalculateRanks' AND routine_type='PROCEDURE';" 2>/dev/null || echo "0")
+if [ "$PROC_COUNT" = "1" ]; then
+    log_ok "stored procedure recalculateRanks"
+else
+    log_error "stored procedure recalculateRanks missing"
+    ALL_OK=0
 fi
 
 # ==============================================================================
 # 6. File Permissions
 # ==============================================================================
 echo ""
-echo "📁 Checking file permissions..."
+log_info "Checking file permissions"
 
 # Ensure PHP files aren't world-writable
 WORLD_WRITABLE=$(find . -name "*.php" -perm -o=w 2>/dev/null | head -5)
 if [ -n "$WORLD_WRITABLE" ]; then
-    echo "⚠️  Some PHP files are world-writable (fixing):"
+    log_warn "Some PHP files are world-writable (fixing)"
     find . -name "*.php" -perm -o=w -exec chmod o-w {} \;
-    echo "   Removed world-write bit from PHP files."
+    log_ok "Removed world-write bit from PHP files"
 else
-    echo "   ✅ No world-writable PHP files."
+    log_ok "No world-writable PHP files"
 fi
 
 # ==============================================================================
@@ -165,6 +225,7 @@ fi
 echo ""
 echo "--------------------------------------------------------------------------------"
 echo "🎉 Setup Complete! You're ready to code."
+echo "   Setup log: $SETUP_LOG"
 echo ""
 echo "🚀 Start the local server:"
 echo "   php -S localhost:6060"
