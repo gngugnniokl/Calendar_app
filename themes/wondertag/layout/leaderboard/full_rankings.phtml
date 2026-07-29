@@ -13,7 +13,10 @@
     <!-- Filters Section -->
     <section class="rankings-controls">
         <div class="filter-pills-container">
-            <div class="filter-pills" id="time-filters">
+            <!-- Renamed from id="time-filters" — that ID was also used in top7.phtml.
+                 Two elements sharing an ID means getElementById() only ever found one
+                 of them, so this row's pills weren't receiving click events. -->
+            <div class="filter-pills" id="time-filters-full">
                 <button class="pill active" data-filter="all-time">All Time</button>
                 <button class="pill" data-filter="this-month">This Month</button>
                 <button class="pill" data-filter="this-week">This Week</button>
