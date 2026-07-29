@@ -49,6 +49,10 @@ function lb_initials(string $name): string
     <i class="fa-solid fa-trophy hero-banner__trophy" aria-hidden="true"></i>
     <h1 class="hero-banner__title">Leaderboard</h1>
     <p class="hero-banner__subtitle">Top token earners on triBBBal right now</p>
+    <div class="hero-banner__actions" style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button id="btn-view-my-rank" class="btn btn-primary" style="background-color: var(--accent-red, #e50914); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;">View My Rank</button>
+        <button id="btn-view-full-rankings" class="btn btn-outline" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;">View Full Rankings &rarr;</button>
+    </div>
 </section>
 
 <section class="rules-card-row">
