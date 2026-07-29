@@ -27,51 +27,87 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="header-inner">
+        <div class="header-inner" style="max-width: 100%; padding-left: 32px; padding-right: 32px;">
                 <a href="?link1=internship_calendar_home" class="brand">
                     <span class="brand-mark"></span>
                     <span class="brand-text">Tribbbal Internship</span>
                 </a>
                 <nav class="main-nav">
 
-                <button id="theme-toggle" class="btn btn-ghost" aria-label="Toggle Dark Mode" style="padding: 6px 10px; margin-left: 8px;">
-                    <span class="theme-icon-light">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                    </span>
-                    <span class="theme-icon-dark">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                    </span>
-                </button>
                 <?php if (!empty($wo['loggedin'])): ?>
-                    <a href="?link1=timeline&u=<?php echo htmlspecialchars($wo['user']['username'] ?? ''); ?>" style="text-decoration: none; color: inherit;">
-                        <div class="nav-user" style="display: flex; align-items: center; gap: 8px;">
+                    <div class="nav-user-dropdown" style="position: relative; display: inline-block;">
+                        <button id="profileDropdownBtn" style="appearance: none; -webkit-appearance: none; background: var(--surface); border: 1px solid var(--hairline); border-radius: 40px; padding: 1px 16px 1px 1px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: inherit; transition: opacity 0.2s; height: 40px; outline: none; margin: 0;">
                             <?php 
                                 $nav_avatar = $wo['user']['avatar'] ?? 'upload/photos/d-avatar.jpg';
                                 $nav_name = $wo['user']['name'] ?? $wo['user']['username'] ?? '';
+                                $display_name = explode(' ', $nav_name)[0];
                                 if ($nav_avatar !== 'upload/photos/d-avatar.jpg'): 
                             ?>
-                                <img src="<?php echo htmlspecialchars($nav_avatar); ?>" alt="<?php echo htmlspecialchars($nav_name); ?>" class="nav-avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--hairline); display: block;">
+                                <img src="<?php echo htmlspecialchars($nav_avatar); ?>" alt="<?php echo htmlspecialchars($nav_name); ?>" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; display: block; border: none; background: transparent; flex-shrink: 0;">
                             <?php else: ?>
-                                <div class="nav-avatar" style="background: var(--pine-tint); color: var(--pine); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                <div style="width: 38px; height: 38px; background: var(--hairline); color: var(--ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border-radius: 50%; flex-shrink: 0;">
                                     <?php echo strtoupper(substr($nav_name, 0, 2)); ?>
                                 </div>
                             <?php endif; ?>
-                            <span class="nav-username"><?php echo htmlspecialchars($wo['user']['name'] ?? ''); ?></span>
+                            <span style="font-weight: 700; font-size: 15px; color: var(--ink); white-space: nowrap;"><?php echo htmlspecialchars($display_name); ?></span>
+                        </button>
+                        
+                        <div id="profileDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 15px; width: 340px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; overflow: hidden; text-align: left;">
+                            <div style="padding: 20px; border-bottom: 1px solid var(--hairline);">
+                                <a href="?link1=timeline&u=<?php echo htmlspecialchars($wo['user']['username'] ?? ''); ?>" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
+                                    <?php if ($nav_avatar !== 'upload/photos/d-avatar.jpg'): ?>
+                                        <img src="<?php echo htmlspecialchars($nav_avatar); ?>" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--hairline);">
+                                    <?php else: ?>
+                                        <div style="width: 44px; height: 44px; background: var(--pine-tint); color: var(--pine); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
+                                            <?php echo strtoupper(substr($nav_name, 0, 2)); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 16px;">My Profile</div>
+                                        <div style="font-size: 13px; color: var(--text-muted);">@<?php echo htmlspecialchars($wo['user']['username'] ?? ''); ?></div>
+                                    </div>
+                                </a>
+                                
+                                <div style="display: flex; gap: 8px; margin-top: 20px;">
+                                    <a href="?link1=leaderboard" style="flex: 1; text-decoration: none; color: inherit;">
+                                        <div style="background: var(--bg); border: 1px solid var(--hairline); border-radius: 20px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                                            <i class="fa-solid fa-coins" style="color: var(--gold);"></i> <span id="lb-user-tokens">--</span>
+                                        </div>
+                                    </a>
+                                    <a href="?link1=leaderboard" style="flex: 1; text-decoration: none; color: inherit;">
+                                        <div style="background: var(--bg); border: 1px solid var(--hairline); border-radius: 20px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                                            <i class="fa-solid fa-chart-simple" style="color: var(--gold);"></i> <span id="lb-user-rank">--</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div style="padding: 12px 0;">
+                                <a href="#" id="theme-toggle" class="dropdown-item" style="display: flex; align-items: center; gap: 16px; padding: 12px 20px; color: inherit; text-decoration: none; transition: background 0.2s;">
+                                    <div style="width: 36px; height: 36px; background: var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <span class="theme-icon-light">
+                                            <i class="fa-solid fa-moon"></i>
+                                        </span>
+                                        <span class="theme-icon-dark">
+                                            <i class="fa-solid fa-sun"></i>
+                                        </span>
+                                    </div>
+                                    <span style="font-weight: 600; font-size: 14px;">Toggle Night Mode</span>
+                                </a>
+                                <a href="?link1=logout" class="dropdown-item" style="display: flex; align-items: center; gap: 16px; padding: 12px 20px; color: inherit; text-decoration: none; transition: background 0.2s;">
+                                    <div style="width: 36px; height: 36px; background: var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                    </div>
+                                    <span style="font-weight: 600; font-size: 14px;">Log Out</span>
+                                </a>
+                            </div>
+                            
+                            <div style="background: var(--bg); padding: 16px 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+                                <span>© 2026 triBBBal</span>
+                                <a href="?link1=leaderboard" style="color: inherit; text-decoration: none;">Leaderboard</a>
+                            </div>
                         </div>
-                    </a>
-                    <a href="?link1=logout" class="btn btn-ghost nav-logout">Logout</a>
+                    </div>
                 <?php else: ?>
                     <a href="?link1=welcome" class="btn btn-ghost">Log In</a>
                     <a href="?link1=register" class="btn btn-primary btn-sm">Register</a>
@@ -126,21 +162,30 @@
     <?php include __DIR__ . '/internship_calendar/includes/event-modal.phtml'; ?>
 
     <?php if (!empty($wo['loggedin'])): ?>
-    <!-- Sticky Leaderboard Progress Footer -->
-    <footer class="leaderboard-progress-footer" id="leaderboard-progress-footer">
-        <div class="progress-footer-inner">
-            <a href="?link1=leaderboard" class="progress-footer-link">
-                <i class="fa-solid fa-trophy progress-footer-icon"></i>
-                <span class="progress-footer-label">Your Tokens:</span>
-                <span class="progress-footer-tokens" id="lb-user-tokens">--</span>
-            </a>
-            <div class="progress-footer-bar-wrap">
-                <div class="progress-footer-bar" id="lb-progress-bar" style="width: 0%;"></div>
-            </div>
-            <span class="progress-footer-rank" id="lb-user-rank">Rank --</span>
-        </div>
-    </footer>
     <?php endif; ?>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var profileBtn = document.getElementById("profileDropdownBtn");
+        var profileDropdown = document.getElementById("profileDropdown");
+        if (profileBtn && profileDropdown) {
+            profileBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                if (profileDropdown.style.display === "none") {
+                    profileDropdown.style.display = "block";
+                } else {
+                    profileDropdown.style.display = "none";
+                }
+            });
+            
+            document.addEventListener("click", function(e) {
+                if (!profileDropdown.contains(e.target) && e.target !== profileBtn) {
+                    profileDropdown.style.display = "none";
+                }
+            });
+        }
+    });
+    </script>
 
     <script src="themes/wondertag/javascript/internship-calendar.js?v=<?php echo time(); ?>"></script>
     <script src="themes/wondertag/javascript/leaderboard.js?v=<?php echo time(); ?>"></script>

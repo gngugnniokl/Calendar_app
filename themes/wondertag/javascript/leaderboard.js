@@ -1,4 +1,5 @@
 /**
+/**
  * Leaderboard Interactive JavaScript Logic (Dev 5)
  * triBBBal Social Media Platform - Leaderboard Module
  *
@@ -486,3 +487,4 @@
     }
 
 })();
+
