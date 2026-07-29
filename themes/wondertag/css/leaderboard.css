@@ -19,8 +19,23 @@
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 28px;
-  background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
+  background:
+    radial-gradient(circle at 78% 35%, rgba(230, 32, 32, 0.55) 0%, rgba(230, 32, 32, 0) 45%),
+    linear-gradient(160deg, var(--pine) 0%, #1a0505 75%, #0a0303 100%);
   box-shadow: var(--shadow-card);
+}
+
+.hero-banner::before {
+  /* Soft glow seated behind the trophy for the cosmic-mockup look */
+  content: "";
+  position: absolute;
+  top: -10%;
+  right: -4%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 199, 79, 0.35) 0%, rgba(255, 199, 79, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .hero-banner::after {
@@ -32,6 +47,9 @@
     radial-gradient(2px 2px at 60% 20%, rgba(255, 255, 255, 0.45) 0, transparent 60%),
     radial-gradient(1.5px 1.5px at 80% 55%, rgba(255, 255, 255, 0.5) 0, transparent 60%),
     radial-gradient(1.5px 1.5px at 40% 75%, rgba(255, 255, 255, 0.35) 0, transparent 60%),
+    radial-gradient(1.5px 1.5px at 90% 15%, rgba(255, 255, 255, 0.5) 0, transparent 60%),
+    radial-gradient(1px 1px at 70% 80%, rgba(255, 255, 255, 0.4) 0, transparent 60%),
+    radial-gradient(1px 1px at 30% 10%, rgba(255, 255, 255, 0.3) 0, transparent 60%),
     linear-gradient(
       120deg,
       rgba(255, 255, 255, 0.14) 0%,
@@ -96,13 +114,13 @@
 }
 
 .btn-hero--primary {
-  background: #fff;
-  color: var(--pine-dark);
+  background: #e62020;
+  color: #fff;
   border: 1px solid transparent;
 }
 
 .btn-hero--primary:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: #c91a1a;
 }
 
 .btn-hero--ghost {
@@ -176,6 +194,45 @@
 }
 
 /* ---------------------------------------------------------------------
+   Section Heading & Quick Filters
+   --------------------------------------------------------------------- */
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.section-heading h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink, #fff);
+  margin: 0;
+}
+
+.section-heading__link {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: #e62020;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.section-heading__link:hover {
+  text-decoration: underline;
+}
+
+.quick-filters {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+/* ---------------------------------------------------------------------
    Podium (Top 3)
    --------------------------------------------------------------------- */
 .podium {
@@ -184,19 +241,23 @@
   justify-content: center;
   gap: 20px;
   margin: 0 0 40px;
-  padding: 0 8px;
+  padding: 28px 8px 0;
 }
 
 .podium__place {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 160px;
+  width: 180px;
   text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 28px 16px 22px;
+  box-shadow: var(--shadow-card);
 }
 
 .podium__avatar {
-  position: relative;
   width: 76px;
   height: 76px;
   border-radius: 50%;
@@ -209,8 +270,8 @@
   font-weight: 600;
   font-size: 26px;
   color: var(--ink-soft);
-  margin-bottom: 10px;
-  overflow: visible;
+  margin-bottom: 12px;
+  overflow: hidden;
 }
 
 .podium__avatar img {
@@ -221,25 +282,19 @@
   display: block;
 }
 
-.podium__badge {
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 12px;
+.podium__rank-number {
+  font-family: var(--font-display);
   font-weight: 700;
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 2px solid var(--surface);
+  font-size: 22px;
+  color: var(--muted);
+  margin-bottom: 8px;
 }
 
 .podium__username {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--ink);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -248,32 +303,28 @@
 
 .podium__tokens {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 12px;
-}
-
-.podium__pillar {
-  width: 100%;
-  border-radius: 8px 8px 0 0;
-  background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-bottom: none;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--pine);
+  margin-bottom: 10px;
 }
 
 .podium__place--gold .podium__avatar { border-color: #e6b800; }
-.podium__place--gold .podium__badge { background: linear-gradient(180deg, #ffd75e, #d9a600); }
-.podium__place--gold .podium__pillar { height: 96px; background: linear-gradient(180deg, var(--pine-tint), var(--surface)); border-color: #e6b800; }
-
 .podium__place--silver .podium__avatar { border-color: #adb5bd; }
-.podium__place--silver .podium__badge { background: linear-gradient(180deg, #dde3e8, #9aa5ad); }
-.podium__place--silver .podium__pillar { height: 66px; }
-
 .podium__place--bronze .podium__avatar { border-color: #c17a4d; }
-.podium__place--bronze .podium__badge { background: linear-gradient(180deg, #d99567, #a85f34); }
-.podium__place--bronze .podium__pillar { height: 44px; }
 
-.podium__place--gold { width: 176px; }
+.podium__place--gold .podium__rank-number { color: #ffd75e; font-size: 26px; }
+.podium__place--silver .podium__rank-number { color: #c8ccd1; }
+.podium__place--bronze .podium__rank-number { color: #d99567; }
+
+.podium__place--gold {
+  width: 200px;
+  margin-top: -28px;
+  padding-top: 36px;
+  border-color: #e6b800;
+  box-shadow: 0 0 0 1px rgba(230, 184, 0, 0.25), 0 12px 28px rgba(230, 184, 0, 0.18), var(--shadow-card);
+}
+
 .podium__place--gold .podium__avatar { width: 92px; height: 92px; font-size: 30px; }
 
 .podium__crown {
@@ -318,27 +369,29 @@
    Rank Cards (4–7)
    --------------------------------------------------------------------- */
 .rank-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
 
 .rank-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
+  text-align: center;
+  gap: 6px;
   background: var(--surface);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: 12px 18px;
+  padding: 20px 12px;
   box-shadow: var(--shadow-card);
 }
 
-.rank-card__rank { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--muted); width: 28px; flex-shrink: 0; }
-.rank-card__avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--paper); border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--ink-soft); flex-shrink: 0; overflow: hidden; }
+.rank-card__rank { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--muted); }
+.rank-card__avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--paper); border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--ink-soft); overflow: hidden; }
 .rank-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
-.rank-card__username { flex: 1; font-weight: 600; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rank-card__tokens { font-family: var(--font-mono); font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.rank-card__username { font-weight: 600; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.rank-card__tokens { font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--pine); }
 .rank-card--you { border-color: var(--pine); box-shadow: 0 0 0 3px var(--pine-tint), var(--shadow-card); }
 .rank-card--you .rank-card__rank, .rank-card--you .rank-card__tokens { color: var(--pine-dark); }
 
@@ -352,13 +405,14 @@
   .hero-banner__actions,
   .hero-banner__dots { justify-content: center; }
   .hero-banner__trophy { font-size: 56px; }
-  .podium { gap: 10px; }
-  .podium__place { width: 30%; }
-  .podium__place--gold { width: 34%; }
-  .podium__place--gold .podium__avatar { width: 68px; height: 68px; font-size: 22px; }
-  .podium__avatar { width: 56px; height: 56px; font-size: 18px; }
+  .podium { gap: 10px; flex-wrap: wrap; }
+  .podium__place { width: 30%; padding: 18px 8px 14px; }
+  .podium__place--gold { width: 34%; margin-top: -14px; padding-top: 22px; }
+  .podium__place--gold .podium__avatar { width: 64px; height: 64px; font-size: 22px; }
+  .podium__avatar { width: 52px; height: 52px; font-size: 16px; }
   .podium__username { font-size: 12px; }
-  .rank-card { padding: 10px 14px; gap: 10px; }
+  .rank-cards { grid-template-columns: repeat(2, 1fr); }
+  .rank-card { padding: 14px 10px; }
 }
 
 /* =====================================================================

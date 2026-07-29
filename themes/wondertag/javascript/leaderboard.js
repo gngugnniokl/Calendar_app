@@ -17,7 +17,14 @@
         currentUserId: window.TRIBBBAL_USER_ID || null,
         itemsPerPage: 15,
         debounceDelay: 300,
-        kingGoalTokens: 100000
+        kingGoalTokens: 100000,
+        // Skips the network calls entirely and renders DEMO_DATA straight away.
+        // Auto-enables when opened as a local file (offline testing) or with
+        // ?demo=1 in the URL. Force it manually with window.TRIBBBAL_FORCE_DEMO = true
+        // before this script loads if you need it on a real page.
+        forceDemoMode: (typeof window.TRIBBBAL_FORCE_DEMO === 'boolean')
+            ? window.TRIBBBAL_FORCE_DEMO
+            : (window.location.protocol === 'file:' || new URLSearchParams(window.location.search).get('demo') === '1')
     };
 
     const state = {
@@ -111,7 +118,6 @@
             fullContainer.classList.add('is-active');
             fullContainer.removeAttribute('hidden');
 
-            // Load rankings if switching to full view
             fetchFullRankings();
         } else {
             fullContainer.classList.remove('is-active');
@@ -119,7 +125,6 @@
             top7Container.classList.add('is-active');
             top7Container.removeAttribute('hidden');
 
-            // Reload top 7 data
             fetchTop7();
         }
     }
@@ -127,30 +132,55 @@
     // API Data Fetching Methods
     async function fetchTop7() {
         state.isLoading = true;
-        const filter = state.activeFilter.replace('-', '');
+        const filter = state.activeFilter.replace('-', ''); // e.g. 'alltime', 'thismonth', 'thisweek', 'today'
         const primaryUrl = `${CONFIG.apiBase}?action=top7&filter=${encodeURIComponent(filter)}`;
         const fallbackUrl = `${CONFIG.fallbackApiBase}/top7?filter=${encodeURIComponent(filter)}`;
 
-        try {
-            let response = await fetch(primaryUrl);
-            if (!response.ok) {
-                response = await fetch(fallbackUrl);
-            }
-            if (response.ok) {
-                const json = await response.json();
-                const data = json.data || (Array.isArray(json) ? json : null);
-                if (data && data.length > 0) {
-                    renderTop7View(data);
-                    state.isLoading = false;
-                    return;
+        if (!CONFIG.forceDemoMode) {
+            try {
+                let response = await fetch(primaryUrl);
+                if (!response.ok) {
+                    response = await fetch(fallbackUrl);
                 }
+                if (response.ok) {
+                    const json = await response.json();
+                    let data = null;
+
+                    if (json.data) {
+                        if (json.data.podium && json.data.others) {
+                            data = [...json.data.podium, ...json.data.others];
+                        } else if (Array.isArray(json.data)) {
+                            data = json.data;
+                        }
+                    } else if (Array.isArray(json)) {
+                        data = json;
+                    }
+
+                    if (data && data.length > 0) {
+                        renderTop7View(data);
+                        state.isLoading = false;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Leaderboard] Primary XHR failed, using fallback demo data:', e);
             }
-        } catch (e) {
-            console.warn('[Leaderboard] Primary XHR failed, using fallback demo data:', e);
         }
 
-        // Fallback to Demo Data
-        renderTop7View(DEMO_DATA.top7);
+        // Fallback: Dynamically scale demo tokens depending on timeframe filter
+        let demoList = JSON.parse(JSON.stringify(DEMO_DATA.top7));
+        let multiplier = 1.0;
+
+        if (state.activeFilter === 'this-month') multiplier = 0.65;
+        else if (state.activeFilter === 'this-week') multiplier = 0.35;
+        else if (state.activeFilter === 'today') multiplier = 0.08;
+
+        demoList.forEach(item => {
+            item.tokens = Math.round((item.tokens || item.token_count) * multiplier);
+            item.token_count = item.tokens;
+        });
+
+        renderTop7View(demoList);
         state.isLoading = false;
     }
 
@@ -164,29 +194,45 @@
         const primaryUrl = `${CONFIG.apiBase}?action=rankings&filter=${encodeURIComponent(filter)}&search=${encodeURIComponent(search)}&page=${page}&limit=${limit}`;
         const fallbackUrl = `${CONFIG.fallbackApiBase}/rankings?filter=${encodeURIComponent(filter)}&search=${encodeURIComponent(search)}&page=${page}&limit=${limit}`;
 
-        try {
-            let response = await fetch(primaryUrl);
-            if (!response.ok) {
-                response = await fetch(fallbackUrl);
-            }
-            if (response.ok) {
-                const json = await response.json();
-                if (json.data && Array.isArray(json.data)) {
-                    state.totalMembers = json.total || state.totalMembers;
-                    state.totalPages = json.totalPages || Math.ceil(state.totalMembers / limit);
-                    renderRankingsTable(json.data);
-                    renderPagination();
-                    updateTotalMembersCount();
-                    state.isLoading = false;
-                    return;
+        if (!CONFIG.forceDemoMode) {
+            try {
+                let response = await fetch(primaryUrl);
+                if (!response.ok) {
+                    response = await fetch(fallbackUrl);
                 }
+                if (response.ok) {
+                    const json = await response.json();
+                    if (json.data && Array.isArray(json.data)) {
+                        // Use ?? not || here: a real total of 0 (e.g. "This Month" with
+                        // no matches yet) is a valid value and must not be silently
+                        // replaced by the stale default member count.
+                        state.totalMembers = json.total ?? state.totalMembers;
+                        state.totalPages = json.totalPages ?? Math.ceil(state.totalMembers / limit);
+                        renderRankingsTable(json.data);
+                        renderPagination();
+                        updateTotalMembersCount();
+                        state.isLoading = false;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Leaderboard] Rankings XHR failed, using fallback demo data:', e);
             }
-        } catch (e) {
-            console.warn('[Leaderboard] Rankings XHR failed, using fallback demo data:', e);
         }
 
         // Fallback logic for demo data filtering/search/pagination
-        let filtered = DEMO_DATA.rankings;
+        let filtered = JSON.parse(JSON.stringify(DEMO_DATA.rankings));
+        
+        let multiplier = 1.0;
+        if (state.activeFilter === 'this-month') multiplier = 0.65;
+        else if (state.activeFilter === 'this-week') multiplier = 0.35;
+        else if (state.activeFilter === 'today') multiplier = 0.08;
+
+        filtered.forEach(item => {
+            item.tokens = Math.round((item.tokens || item.token_count) * multiplier);
+            item.token_count = item.tokens;
+        });
+
         if (search) {
             const q = search.toLowerCase();
             filtered = filtered.filter(item => (item.name || '').toLowerCase().includes(q) || (item.username || '').toLowerCase().includes(q));
@@ -204,7 +250,7 @@
     }
 
     async function fetchUserProgress() {
-        if (!CONFIG.currentUserId) {
+        if (!CONFIG.currentUserId || CONFIG.forceDemoMode) {
             updateStickyProgressBar(DEMO_DATA.user);
             return;
         }
@@ -219,9 +265,9 @@
             }
             if (response.ok) {
                 const json = await response.json();
-                if (json && (json.rank || json.tokens)) {
-                    state.userProgress = json;
-                    updateStickyProgressBar(json);
+                if (json && json.data) {
+                    state.userProgress = json.data;
+                    updateStickyProgressBar(json.data);
                     return;
                 }
             }
@@ -395,17 +441,25 @@
         // View Switching Buttons
         const backBtn = document.getElementById('btn-back-top7');
         if (backBtn) {
-            backBtn.addEventListener('click', () => switchView('top7'));
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchView('top7');
+            });
         }
 
         const viewFullBtn = document.getElementById('btn-view-full-rankings');
-        if (viewFullBtn) {
-            viewFullBtn.addEventListener('click', () => switchView('full'));
-        }
+        const viewFullBtnSecondary = document.getElementById('btn-view-full-rankings-secondary');
+        [viewFullBtn, viewFullBtnSecondary].filter(Boolean).forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchView('full');
+            });
+        });
 
         const viewMyRankBtn = document.getElementById('btn-view-my-rank');
         if (viewMyRankBtn) {
-            viewMyRankBtn.addEventListener('click', () => {
+            viewMyRankBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 switchView('full');
                 setTimeout(() => {
                     const userRow = document.getElementById('user-highlight-row');
@@ -427,16 +481,31 @@
         }
 
         // Time Filter Pills
-        const filterPillsContainer = document.getElementById('time-filters');
-        if (filterPillsContainer) {
-            filterPillsContainer.addEventListener('click', (e) => {
+        // top7.phtml and full_rankings.phtml each have their own filter-pill row
+        // (formerly both id="time-filters", which collided — only fixed now that
+        // they're id="time-filters-top7" / id="time-filters-full").
+        const filterPillsContainers = [
+            document.getElementById('time-filters-top7'),
+            document.getElementById('time-filters-full')
+        ].filter(Boolean);
+
+        function setActivePill(filterValue) {
+            filterPillsContainers.forEach(container => {
+                container.querySelectorAll('.pill').forEach(p => {
+                    p.classList.toggle('active', p.getAttribute('data-filter') === filterValue);
+                });
+            });
+        }
+
+        filterPillsContainers.forEach(container => {
+            container.addEventListener('click', (e) => {
                 const btn = e.target.closest('.pill');
                 if (!btn) return;
 
-                filterPillsContainer.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
+                const filterValue = btn.getAttribute('data-filter') || 'all-time';
+                setActivePill(filterValue);
 
-                state.activeFilter = btn.getAttribute('data-filter') || 'all-time';
+                state.activeFilter = filterValue;
                 state.currentPage = 1;
 
                 if (state.currentView === 'full') {
@@ -445,7 +514,7 @@
                     fetchTop7();
                 }
             });
-        }
+        });
 
         // Pagination Click Delegation
         const paginationWrapper = document.querySelector('.pagination-wrapper');
