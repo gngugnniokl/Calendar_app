@@ -1,0 +1,111 @@
+<div class="full-rankings-container">
+    <!-- Header Section -->
+    <header class="rankings-header">
+        <button class="back-btn" id="btn-back-top7">&larr; Back to Top 7</button>
+        <h2>Full Rankings</h2>
+        <div class="search-wrapper">
+            <input type="text" id="search-members" class="search-bar" placeholder="Search members...">
+            <!-- Inline SVG for Search Icon -->
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+    </header>
+
+    <!-- Filters Section -->
+    <section class="rankings-controls">
+        <div class="filter-pills-container">
+            <div class="filter-pills" id="time-filters">
+                <button class="pill active" data-filter="all-time">All Time</button>
+                <button class="pill" data-filter="this-month">This Month</button>
+                <button class="pill" data-filter="this-week">This Week</button>
+                <button class="pill" data-filter="today">Today</button>
+            </div>
+        </div>
+        <div class="member-count">
+            <span id="total-members-count">1,247,832</span> Members Ranked
+        </div>
+    </section>
+
+    <!-- Data Table Section -->
+    <div class="table-responsive">
+        <table class="rankings-table">
+            <thead>
+                <tr>
+                    <th>RANK</th>
+                    <th>MEMBER</th>
+                    <th>TOKENS</th>
+                    <th>STATUS</th>
+                    <th>JOINED</th>
+                    <th>TREND</th>
+                </tr>
+            </thead>
+            <tbody id="rankings-tbody">
+                <tr>
+                    <td class="rank-col"><span class="crown gold">👑</span> 1</td>
+                    <td class="member-col"><img src="https://ui-avatars.com/api/?name=triBBBal+2020&background=random" class="avatar" alt="User"> triBBBal 2020</td>
+                    <td class="tokens-col">168,760</td>
+                    <td><span class="badge king">👑 KING</span></td>
+                    <td>Jan 2020</td>
+                    <td class="trend-col up">&uarr;</td>
+                </tr>
+                <tr>
+                    <td class="rank-col"><span class="crown silver">👑</span> 2</td>
+                    <td class="member-col"><img src="https://ui-avatars.com/api/?name=Ugochukwu+Ogbodo&background=random" class="avatar" alt="User"> Ugochukwu Ogbodo</td>
+                    <td class="tokens-col">56,890</td>
+                    <td><span class="badge king">👑 KING</span></td>
+                    <td>Mar 2021</td>
+                    <td class="trend-col up">&uarr;</td>
+                </tr>
+                <tr>
+                    <td class="rank-col"><span class="crown bronze">👑</span> 3</td>
+                    <td class="member-col"><img src="https://ui-avatars.com/api/?name=Christie+Udoeyoh&background=random" class="avatar" alt="User"> Christie Udoeyoh</td>
+                    <td class="tokens-col">55,020</td>
+                    <td><span class="badge queen">👑 QUEEN</span></td>
+                    <td>Feb 2021</td>
+                    <td class="trend-col up">&uarr;</td>
+                </tr>
+                <tr>
+                    <td class="rank-col">4</td>
+                    <td class="member-col"><img src="https://ui-avatars.com/api/?name=Kene+PL&background=random" class="avatar" alt="User"> Kene PL</td>
+                    <td class="tokens-col">41,380</td>
+                    <td><span class="badge member">👤 MEMBER</span></td>
+                    <td>Jun 2021</td>
+                    <td class="trend-col neutral">&rarr;</td>
+                </tr>
+                <tr>
+                    <td class="rank-col">5</td>
+                    <td class="member-col"><img src="https://ui-avatars.com/api/?name=Martha+Okpara&background=random" class="avatar" alt="User"> Martha Okpara</td>
+                    <td class="tokens-col">40,890</td>
+                    <td><span class="badge member">👤 MEMBER</span></td>
+                    <td>Aug 2021</td>
+                    <td class="trend-col up">&uarr;</td>
+                </tr>
+            </tbody>
+            <!-- "Your Rank" Highlight Row -->
+            <tbody id="user-highlight-row">
+                <tr class="spacer-row"><td colspan="6"></td></tr>
+                <tr class="highlight-row">
+                    <td class="rank-col highlight-text">YOUR RANK<br><strong>#4,521</strong></td>
+                    <td class="member-col"><img src="https://ui-avatars.com/api/?name=You&background=random" class="avatar user-avatar" alt="You"> You <div class="online-dot"></div></td>
+                    <td class="tokens-col">12,450</td>
+                    <td><span class="badge member">👤 MEMBER</span></td>
+                    <td>May 2022</td>
+                    <td class="trend-col neutral">&rarr;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-wrapper">
+        <button class="page-btn" id="page-prev">&larr; Previous</button>
+        <div class="page-numbers" id="pagination-numbers">
+            <button class="page-num active">1</button>
+            <button class="page-num">2</button>
+            <button class="page-num">3</button>
+            <span class="dots">...</span>
+            <button class="page-num">847</button>
+            <button class="page-num">848</button>
+        </div>
+        <button class="page-btn" id="page-next">Next &rarr;</button>
+    </div>
+</div>
