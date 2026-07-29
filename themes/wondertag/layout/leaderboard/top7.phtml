@@ -9,20 +9,22 @@
  *
  * Row shape (matches Dev 2's JSON contract):
  *   ['rank' => 1, 'username' => 'string', 'name' => 'string',
- *    'avatar' => 'upload/photos/...', 'tokens' => 15420]
+ *    'avatar' => 'upload/photos/...', 'tokens' => 168760,
+ *    'badge' => 'King' | 'Queen' | null]
  *
+ * 'badge' is optional — only the top few rows tend to carry a title.
  * Falls back to mock rows so this view still renders on Day 1,
  * before $wo['top7_rankings'] is wired up.
  */
 
 $topSeven = $wo['top7_rankings'] ?? [
-    ['rank' => 1, 'username' => 'nightowl_ade',  'name' => 'Ade Bello',   'avatar' => '', 'tokens' => 15420],
-    ['rank' => 2, 'username' => 'kemi_codes',     'name' => 'Kemi Alade', 'avatar' => '', 'tokens' => 13980],
-    ['rank' => 3, 'username' => 'triBBBal_king',  'name' => 'Tunde O.',   'avatar' => '', 'tokens' => 12750],
-    ['rank' => 4, 'username' => 'lagoslive',      'name' => 'Chioma N.',  'avatar' => '', 'tokens' => 9800],
-    ['rank' => 5, 'username' => 'chidi.exe',      'name' => 'Chidi K.',   'avatar' => '', 'tokens' => 8650],
-    ['rank' => 6, 'username' => 'amaka_v',        'name' => 'Amaka V.',   'avatar' => '', 'tokens' => 7420],
-    ['rank' => 7, 'username' => 'darey_on_top',   'name' => 'Darey A.',   'avatar' => '', 'tokens' => 6900],
+    ['rank' => 1, 'username' => 'tribbbal_2020', 'name' => 'triBBBal 2020',       'avatar' => '', 'tokens' => 168760, 'badge' => 'King'],
+    ['rank' => 2, 'username' => 'ugo_ogbodo',     'name' => 'Ugochukwu Ogbodo',   'avatar' => '', 'tokens' => 56890,  'badge' => 'King'],
+    ['rank' => 3, 'username' => 'christie_u',     'name' => 'Christie Udoeyoh',   'avatar' => '', 'tokens' => 55020,  'badge' => 'Queen'],
+    ['rank' => 4, 'username' => 'kene_pl',        'name' => 'Kene PL',            'avatar' => '', 'tokens' => 41380],
+    ['rank' => 5, 'username' => 'martha_okpara',  'name' => 'Martha Okpara',      'avatar' => '', 'tokens' => 40890],
+    ['rank' => 6, 'username' => 'peter_eneji',    'name' => 'Peter Eneji',        'avatar' => '', 'tokens' => 40515],
+    ['rank' => 7, 'username' => 'oluade_adeniyi', 'name' => 'Olúládé Adéníyì',    'avatar' => '', 'tokens' => 35125],
 ];
 
 $currentUserId = !empty($wo['user']['user_id']) ? (int) $wo['user']['user_id'] : 0;
@@ -46,29 +48,42 @@ function lb_initials(string $name): string
 ?>
 
 <section class="hero-banner">
-    <i class="fa-solid fa-trophy hero-banner__trophy" aria-hidden="true"></i>
-    <h1 class="hero-banner__title">Leaderboard</h1>
-    <p class="hero-banner__subtitle">Top token earners on triBBBal right now</p>
-    <div class="hero-banner__actions" style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-        <button id="btn-view-my-rank" class="btn btn-primary" style="background-color: var(--accent-red, #e50914); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;">View My Rank</button>
-        <button id="btn-view-full-rankings" class="btn btn-outline" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;">View Full Rankings &rarr;</button>
+    <div class="hero-banner__content">
+        <h1 class="hero-banner__title">Leaderboard</h1>
+        <p class="hero-banner__subtitle">Top Kings and Queens of triBBBal</p>
+        <div class="hero-banner__actions">
+            <a href="?link1=leaderboard&amp;type=full" class="btn-hero btn-hero--primary">View Full Rankings</a>
+            <a href="#my-rank" class="btn-hero btn-hero--ghost">My Rank</a>
+        </div>
+        <!-- Decorative dots only — Dev 5 can wire these to whatever the banner cycles through -->
+        <div class="hero-banner__dots" aria-hidden="true">
+            <span class="dot is-active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
     </div>
+    <i class="fa-solid fa-trophy hero-banner__trophy" aria-hidden="true"></i>
 </section>
 
-<section class="rules-card-row">
-    <div class="rules-card">
-        <span class="rules-card__eyebrow">Earn</span>
-        <p>Tokens accrue from engagement — posts, reactions, and daily streaks all count toward your rank.</p>
+<div class="section-heading">
+    <h2>Top Kings and Queens</h2>
+</div>
+
+<div class="quick-filters">
+    <!-- Reuses Dev 4's .filter-pills / .pill component — same control, same look, both views -->
+    <div class="filter-pills" role="tablist" aria-label="Leaderboard time range">
+        <button type="button" class="pill active" data-range="all">All Time</button>
+        <button type="button" class="pill" data-range="month">This Month</button>
+        <button type="button" class="pill" data-range="week">This Week</button>
+        <button type="button" class="pill" data-range="today">Today</button>
     </div>
-    <div class="rules-card">
-        <span class="rules-card__eyebrow">Refresh</span>
-        <p>Rankings recalculate every 5 minutes, so a burst of activity can move you up fast.</p>
-    </div>
-    <div class="rules-card">
-        <span class="rules-card__eyebrow">Compete</span>
-        <p>Only your top 7 all-time rivals are shown here — see the full field in Full Rankings.</p>
-    </div>
-</section>
+    <a href="?link1=leaderboard&amp;type=full" class="quick-filters__link">
+        View Full Rankings <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+    </a>
+</div>
 
 <section class="podium" aria-label="Top 3 ranked users">
     <?php foreach ($podiumDisplay as $entry): ?>
@@ -80,17 +95,22 @@ function lb_initials(string $name): string
             $displayName = $entry['name'] ?? $entry['username'];
         ?>
         <div class="podium__place podium__place--<?php echo $tier; ?><?php echo $isYou ? ' podium__place--you' : ''; ?>" data-rank="<?php echo $rank; ?>">
+            <?php if ($tier === 'gold'): ?>
+                <i class="fa-solid fa-crown podium__crown" aria-hidden="true"></i>
+            <?php endif; ?>
             <div class="podium__avatar">
                 <?php if (!empty($entry['avatar'])): ?>
                     <img src="<?php echo clean($entry['avatar']); ?>" alt="">
                 <?php else: ?>
                     <span><?php echo clean(lb_initials($displayName)); ?></span>
                 <?php endif; ?>
-                <span class="podium__badge">#<?php echo $rank; ?></span>
             </div>
+            <div class="podium__rank-number"><?php echo $rank; ?></div>
             <div class="podium__username"><?php echo clean($displayName); ?></div>
-            <div class="podium__tokens"><?php echo number_format((int) $entry['tokens']); ?> tokens</div>
-            <div class="podium__pillar"></div>
+            <div class="podium__tokens"><?php echo number_format((int) $entry['tokens']); ?></div>
+            <?php if (!empty($entry['badge'])): ?>
+                <span class="podium__title-pill"><?php echo clean(strtoupper($entry['badge'])); ?></span>
+            <?php endif; ?>
         </div>
     <?php endforeach; ?>
 </section>
@@ -102,7 +122,6 @@ function lb_initials(string $name): string
             $displayName = $entry['name'] ?? $entry['username'];
         ?>
         <div class="rank-card<?php echo $isYou ? ' rank-card--you' : ''; ?>">
-            <span class="rank-card__rank">#<?php echo (int) $entry['rank']; ?></span>
             <div class="rank-card__avatar">
                 <?php if (!empty($entry['avatar'])): ?>
                     <img src="<?php echo clean($entry['avatar']); ?>" alt="">
@@ -110,8 +129,9 @@ function lb_initials(string $name): string
                     <span><?php echo clean(lb_initials($displayName)); ?></span>
                 <?php endif; ?>
             </div>
-            <span class="rank-card__username"><?php echo clean($displayName); ?></span>
-            <span class="rank-card__tokens"><?php echo number_format((int) $entry['tokens']); ?></span>
+            <div class="rank-card__rank"><?php echo (int) $entry['rank']; ?></div>
+            <div class="rank-card__username"><?php echo clean($displayName); ?></div>
+            <div class="rank-card__tokens"><?php echo number_format((int) $entry['tokens']); ?></div>
         </div>
     <?php endforeach; ?>
 </section>
