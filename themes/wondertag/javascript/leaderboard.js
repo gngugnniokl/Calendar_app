@@ -310,7 +310,7 @@
             const item = standardItems[idx];
             if (item) {
                 const rankNumEl = card.querySelector('.rank-card__rank');
-                if (rankNumEl) rankNumEl.textContent = `#${item.rank}`;
+                if (rankNumEl) rankNumEl.textContent = item.rank;
 
                 const avatarWrap = card.querySelector('.rank-card__avatar');
                 if (avatarWrap) {
