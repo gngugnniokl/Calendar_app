@@ -419,15 +419,16 @@
    Leaderboard — Full Rankings View (Dev 4 scope)
    ===================================================================== */
 
-/* Base Container */
+/* Base Container - Background Restored for Readability */
 .full-rankings-container {
-    background-color: #0a0a0a;
-    color: #ffffff;
-    font-family: 'Inter', sans-serif;
-    padding: 30px;
-    border-radius: 16px;
+    background-color: var(--surface); /* Restored solid background */
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 30px; 
+    border-radius: var(--radius, 16px);
     width: 100%;
     box-sizing: border-box; 
+    box-shadow: var(--shadow-card);
 }
 
 /* Header & Buttons */
@@ -435,43 +436,118 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    position: relative;
 }
-.rankings-header h2 { font-size: 22px; font-weight: 600; margin: 0; position: absolute; left: 50%; transform: translateX(-50%); }
-.back-btn { background-color: #1a1a1a; border: 1px solid #333; color: #fff; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; }
-.back-btn:hover { background-color: #2a2a2a; }
+.rankings-header h2 { 
+    font-size: 24px; 
+    font-weight: 700; 
+    margin: 0; 
+    position: absolute; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    color: var(--ink);
+}
+.back-btn { 
+    background-color: var(--paper); 
+    border: 1px solid var(--hairline); 
+    color: var(--ink-soft); 
+    padding: 8px 16px; 
+    border-radius: 20px; 
+    cursor: pointer; 
+    font-size: 13px; 
+    transition: 0.2s; 
+}
+.back-btn:hover { background-color: var(--hairline); color: var(--ink); }
 
 /* Search Bar */
 .search-wrapper { position: relative; display: flex; align-items: center; }
-.search-bar { background-color: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px 36px 10px 16px; border-radius: 20px; outline: none; font-size: 13px; width: 200px; }
-.search-icon { position: absolute; right: 12px; color: #888; }
+.search-bar { 
+    background-color: var(--paper); 
+    border: 1px solid var(--hairline); 
+    color: var(--ink); 
+    padding: 10px 36px 10px 16px; 
+    border-radius: 20px; 
+    outline: none; 
+    font-size: 13px; 
+    width: 220px; 
+}
+.search-bar:focus { border-color: var(--muted); }
+.search-icon { position: absolute; right: 12px; color: var(--muted); }
 
 /* Filter Pills */
-.rankings-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.rankings-controls { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 24px; 
+}
 .filter-pills-container { flex: 1; display: flex; justify-content: center; }
-.filter-pills { background-color: #1a1a1a; border-radius: 30px; padding: 4px; display: inline-flex; gap: 4px; }
-.filter-pills .pill { background: transparent; border: none; color: #888; padding: 8px 20px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.3s; }
+.filter-pills { 
+    background-color: var(--paper); 
+    border-radius: 30px; 
+    padding: 4px; 
+    display: inline-flex; 
+    gap: 4px; 
+    border: 1px solid var(--hairline);
+}
+.filter-pills .pill { 
+    background: transparent; 
+    border: none; 
+    color: var(--muted); 
+    padding: 8px 20px; 
+    border-radius: 24px; 
+    cursor: pointer; 
+    font-size: 13px; 
+    font-weight: 600; 
+    transition: 0.3s; 
+}
 .filter-pills .pill.active { background-color: #e62020; color: #fff; }
-.member-count { color: #ccc; font-size: 13px; }
-.member-count span { font-weight: bold; color: #fff; }
+.member-count { color: var(--muted); font-size: 13px; }
+.member-count span { font-weight: bold; color: var(--ink); }
 
-/* Rankings Table - Critical Fixes for Border Radius */
-.rankings-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
-.rankings-table th { color: #888; font-size: 11px; font-weight: 600; text-transform: uppercase; padding: 16px; border-bottom: 1px solid #222; }
-.rankings-table td { padding: 12px 16px; border-bottom: 1px solid #1a1a1a; vertical-align: middle; font-size: 14px; }
+/* Rankings Table */
+.rankings-table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    text-align: left; 
+}
+.rankings-table th { 
+    color: var(--muted); 
+    font-size: 11px; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    padding: 16px 24px; 
+    border-bottom: 1px solid var(--hairline); 
+}
+.rankings-table tbody#rankings-tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.rankings-table tbody#rankings-tbody tr:hover {
+    background-color: var(--paper);
+    transform: scale(1.002);
+    cursor: pointer;
+}
+.rankings-table td { 
+    padding: 16px 24px; 
+    border-bottom: 1px solid var(--hairline); 
+    vertical-align: middle; 
+    font-size: 14px; 
+}
 .rankings-table tr:last-child td { border-bottom: none; }
 
 /* Typography & Avatars */
 .member-col { display: flex; align-items: center; gap: 12px; position: relative; }
 .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-.online-dot { width: 10px; height: 10px; background-color: #4caf50; border: 2px solid #000; border-radius: 50%; position: absolute; left: 26px; bottom: -2px; }
+.online-dot { width: 10px; height: 10px; background-color: #4caf50; border: 2px solid var(--surface); border-radius: 50%; position: absolute; left: 26px; bottom: -2px; }
 .tokens-col { color: #e62020; font-weight: bold; }
 .rank-col { font-weight: bold; font-size: 15px; }
 
 /* Badges */
 .badge { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; display: inline-block; }
 .badge.king, .badge.queen { border: 1px solid #d4af37; color: #d4af37; }
-.badge.member { border: 1px solid #444; color: #aaa; }
+.badge.member { border: 1px solid var(--hairline); color: var(--ink-soft); }
 
 /* Trend Arrows */
 .trend-col { font-size: 16px; font-weight: bold; }
@@ -480,19 +556,54 @@
 .trend-col.down { color: #f44336; }
 
 /* The "Your Rank" Highlight Row */
-.spacer-row td { padding: 4px; border: none; }
+.spacer-row td { padding: 4px; border: none !important; background: transparent !important; }
 .highlight-row { background-color: rgba(230, 32, 32, 0.08); }
-.highlight-row td { border-top: 1px solid #e62020; border-bottom: 1px solid #e62020; border-bottom: 1px solid #e62020 !important; }
-.highlight-row td:first-child { border-left: 1px solid #e62020; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-.highlight-row td:last-child { border-right: 1px solid #e62020; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+.highlight-row td { 
+    border-top: 1px solid #e62020 !important; 
+    border-bottom: 1px solid #e62020 !important; 
+}
+.highlight-row td:first-child { 
+    border-left: 1px solid #e62020 !important; 
+    border-top-left-radius: 10px; 
+    border-bottom-left-radius: 10px; 
+}
+.highlight-row td:last-child { 
+    border-right: 1px solid #e62020 !important; 
+    border-top-right-radius: 10px; 
+    border-bottom-right-radius: 10px; 
+}
 .highlight-text { color: #e62020; font-size: 11px; line-height: 1.4; }
 .highlight-text strong { font-size: 15px; }
 
-/* Pagination */
-.pagination-wrapper { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 30px; }
-.page-btn, .page-num { background-color: #1a1a1a; border: 1px solid #2a2a2a; color: #ccc; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-.page-num.active { background-color: #e62020; border-color: #e62020; color: #fff; }
-.dots { color: #888; }
+/* Pagination Styles Restored */
+.pagination-wrapper { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 8px; 
+    margin-top: 30px; 
+}
+.page-btn, .page-num { 
+    background-color: var(--surface); 
+    border: 1px solid var(--hairline); 
+    color: var(--ink-soft); 
+    padding: 8px 14px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 13px;
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: 0.2s;
+}
+.page-btn:hover, .page-num:hover:not(.active) {
+    background-color: var(--paper);
+    color: var(--ink);
+}
+.page-num.active { 
+    background-color: #e62020; 
+    border-color: #e62020; 
+    color: #fff; 
+}
+.dots { color: var(--muted); }
 
 /* Responsive Design & Mobile Layout Fixes */
 .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
