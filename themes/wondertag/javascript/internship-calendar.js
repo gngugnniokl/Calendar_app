@@ -395,3 +395,59 @@
     });
 
 })();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const top7View = document.getElementById('leaderboard-view-top7');
+    const fullView = document.getElementById('leaderboard-view-full');
+    const btnBackTop7 = document.getElementById('btn-back-top7');
+    
+    // Grab all links that point to the full rankings
+    const viewFullLinks = document.querySelectorAll('a[href*="type=full"]');
+
+    // Instantly show Full Rankings
+    function showFullRankings(e) {
+        if (e) e.preventDefault(); // Stop the page from reloading
+        
+        top7View.classList.remove('is-active');
+        top7View.setAttribute('hidden', 'true');
+        
+        fullView.classList.add('is-active');
+        fullView.removeAttribute('hidden');
+        
+        // Silently update the URL in the browser
+        window.history.pushState({}, '', '?link1=leaderboard&type=full');
+    }
+
+    // Instantly show Top 7
+    function showTop7(e) {
+        if (e) e.preventDefault(); // Stop the page from reloading
+        
+        fullView.classList.remove('is-active');
+        fullView.setAttribute('hidden', 'true');
+        
+        top7View.classList.add('is-active');
+        top7View.removeAttribute('hidden');
+        
+        // Silently update the URL in the browser
+        window.history.pushState({}, '', '?link1=leaderboard');
+    }
+
+    // Attach click listeners to the buttons
+    viewFullLinks.forEach(link => {
+        link.addEventListener('click', showFullRankings);
+    });
+
+    if (btnBackTop7) {
+        btnBackTop7.addEventListener('click', showTop7);
+    }
+
+    // Ensure the browser's Back/Forward buttons still work
+    window.addEventListener('popstate', function() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('type') === 'full') {
+            showFullRankings();
+        } else {
+            showTop7();
+        }
+    });
+});
