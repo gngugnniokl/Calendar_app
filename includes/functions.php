@@ -765,6 +765,9 @@ function Wo_GetTimelineUser(mysqli $conn, string $username): ?array
         LIMIT 1
     ";
     $stmt = mysqli_prepare($conn, $query);
+    if (!$stmt) {
+    die('Prepare failed: ' . mysqli_error($conn));
+}
     mysqli_stmt_bind_param($stmt, "s", $username);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);

@@ -36,14 +36,14 @@ function Wo_GetUserTimelineEvents(mysqli $conn, int $user_id): array
     ];
 
     // Fetch events for this user OR programme-wide (user_id IS NULL), but ONLY for the current week
-    $stmt = mysqli_prepare($conn,
-        "SELECT e.id, e.week, e.day, e.title, e.description, e.event_date, IF(c.id IS NOT NULL, 1, 0) AS is_completed
-         FROM calendar_events e
-         LEFT JOIN calendar_event_completions c ON e.id = c.event_id AND c.user_id = ?
-         WHERE (e.user_id = ? OR e.user_id IS NULL) AND e.week = ?
-         ORDER BY e.event_date ASC"
-    );
-    mysqli_stmt_bind_param($stmt, 'iii', $user_id, $user_id, $current_week);
+$stmt = mysqli_prepare($conn,
+    "SELECT e.id, e.week, e.day, e.title, e.description, e.event_date, e.is_completed
+     FROM calendar_events e
+     WHERE (e.user_id = ? OR e.user_id IS NULL) AND e.week = ?
+     ORDER BY e.event_date ASC"
+);
+mysqli_stmt_bind_param($stmt, 'ii', $user_id, $current_week);
+
 
     if ($stmt && mysqli_stmt_execute($stmt)) {
         $res = mysqli_stmt_get_result($stmt);

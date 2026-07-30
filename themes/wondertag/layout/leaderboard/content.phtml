@@ -1,21 +1,19 @@
 <?php
 /**
  * Leaderboard - Main View Layout
- *
- * Rendered by leaderboard.php (page controller, Dev 6) inside
- * themes/wondertag/layout/container.phtml.
- *
- * Toggling between this Top 7 view and the Full Rankings view
- * (full_rankings.phtml, Dev 4) is handled client-side by
- * themes/wondertag/javascript/leaderboard.js (Dev 5).
  */
+
+// Check the URL for the 'type=full' parameter
+$isFullView = (isset($_GET['type']) && $_GET['type'] === 'full');
 ?>
 <div class="leaderboard-page">
-    <div id="leaderboard-view-top7" class="leaderboard-view is-active">
+    <!-- Top 7 View -->
+    <div id="leaderboard-view-top7" class="leaderboard-view <?php echo $isFullView ? '' : 'is-active'; ?>" <?php echo $isFullView ? 'hidden' : ''; ?>>
         <?php include __DIR__ . '/top7.phtml'; ?>
     </div>
 
-    <div id="leaderboard-view-full" class="leaderboard-view" hidden>
+    <!-- Full Rankings View -->
+    <div id="leaderboard-view-full" class="leaderboard-view <?php echo $isFullView ? 'is-active' : ''; ?>" <?php echo $isFullView ? '' : 'hidden'; ?>>
         <?php include __DIR__ . '/full_rankings.phtml'; ?>
     </div>
 </div>
