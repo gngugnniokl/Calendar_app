@@ -765,6 +765,9 @@ function Wo_GetTimelineUser(mysqli $conn, string $username): ?array
         LIMIT 1
     ";
     $stmt = mysqli_prepare($conn, $query);
+    if (!$stmt) {
+    die('Prepare failed: ' . mysqli_error($conn));
+}
     mysqli_stmt_bind_param($stmt, "s", $username);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -1085,4 +1088,74 @@ function Wo_GetRandomUsers(mysqli $conn, int $current_user_id, int $limit = 5): 
     }
     mysqli_stmt_close($stmt);
     return $users;
+}
+
+/**
+ * Wo_GetLeaderboardData() — Fetch leaderboard rankings.
+ *
+ * @param mysqli $conn
+ * @param array $options
+ * @return array
+ */
+function Wo_GetLeaderboardData(mysqli $conn, array $options = []): array {
+    $limit = isset($options['limit']) ? (int)$options['limit'] : 10;
+    $offset = isset($options['offset']) ? (int)$options['offset'] : 0;
+    $search = isset($options['search']) ? trim((string)$options['search']) : '';
+    
+    // Base query using points from Wo_Users directly (assuming Dev 1 added points column
+    // or we use a subquery if tables are still being set up).
+    // For now, we simulate points using user_id + joined to have variation.
+    $sql = "SELECT user_id, username, CONCAT(first_name, ' ', last_name) as name, avatar, 
+            (user_id * 10 + joined % 1000) as points 
+            FROM Wo_Users 
+            WHERE active = '1'";
+            
+    if ($search !== '') {
+        $sql .= " AND (username LIKE ? OR first_name LIKE ? OR last_name LIKE ?)";
+    }
+    
+    $sql .= " ORDER BY points DESC LIMIT ? OFFSET ?";
+    
+    $stmt = mysqli_prepare($conn, $sql);
+    
+    if ($search !== '') {
+        $search_param = "%$search%";
+        mysqli_stmt_bind_param($stmt, 'sssii', $search_param, $search_param, $search_param, $limit, $offset);
+    } else {
+        mysqli_stmt_bind_param($stmt, 'ii', $limit, $offset);
+    }
+    
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $data = [];
+    $rank = $offset + 1;
+    if ($res) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            $row['rank'] = $rank++;
+            if (trim($row['name']) === '') $row['name'] = $row['username'];
+            $data[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $data;
+}
+
+/**
+ * Wo_GetUserRank() — Fetch specific user's rank and points.
+ */
+function Wo_GetUserRank(mysqli $conn, int $user_id): array {
+    // Subquery to find rank based on points logic
+    $sql = "SELECT user_id, points, rank FROM (
+                SELECT user_id, (user_id * 10 + joined % 1000) as points, 
+                RANK() OVER (ORDER BY (user_id * 10 + joined % 1000) DESC) as rank
+                FROM Wo_Users WHERE active = '1'
+            ) as rankings WHERE user_id = ?";
+            
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $data = mysqli_fetch_assoc($res) ?: ['user_id' => $user_id, 'points' => 0, 'rank' => '--'];
+    mysqli_stmt_close($stmt);
+    return $data;
 }
