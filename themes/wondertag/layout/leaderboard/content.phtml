@@ -16,4 +16,32 @@ $isFullView = (isset($_GET['type']) && $_GET['type'] === 'full');
     <div id="leaderboard-view-full" class="leaderboard-view <?php echo $isFullView ? 'is-active' : ''; ?>" <?php echo $isFullView ? '' : 'hidden'; ?>>
         <?php include __DIR__ . '/full_rankings.phtml'; ?>
     </div>
+
+    <!-- Rank and Tokens Strip (Persistent Footer) -->
+    <div class="leaderboard-footer-strip">
+        <div class="footer-strip-inner">
+            <div class="footer-stat-group">
+                <div class="stat-icon-wrap">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </div>
+                <div class="stat-text-wrap">
+                    <span>Your Rank: </span>
+                    <strong class="stat-highlight" id="lb-footer-rank">#--</strong>
+                    <span class="stat-divider">|</span>
+                    <span>Tokens: </span>
+                    <strong class="stat-highlight" id="lb-footer-tokens">--</strong>
+                </div>
+            </div>
+            
+            <div class="footer-progress-group">
+                <div class="progress-track">
+                    <div class="progress-bar-fill" id="lb-footer-progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="progress-details">
+                    <span class="progress-percent" id="lb-footer-progress-percent">0%</span>
+                    <span class="progress-goal">100,000</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

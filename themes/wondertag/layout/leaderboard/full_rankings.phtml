@@ -1,34 +1,56 @@
 <div class="full-rankings-container">
     <!-- Header Section -->
     <header class="rankings-header">
-        <button class="back-btn" id="btn-back-top7">&larr; Back to Top 7</button>
+        <button class="back-btn" id="btn-back-top7">
+            <i class="fa-solid fa-arrow-left"></i> Back to Top 7
+        </button>
         <h2>Full Rankings</h2>
         <div class="search-wrapper">
             <input type="text" id="search-members" class="search-bar" placeholder="Search members...">
-            <!-- Inline SVG for Search Icon -->
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
         </div>
     </header>
 
     <!-- Filters Section -->
     <section class="rankings-controls">
         <div class="filter-pills-container">
-            <!-- Renamed from id="time-filters" — that ID was also used in top7.phtml.
-                 Two elements sharing an ID means getElementById() only ever found one
-                 of them, so this row's pills weren't receiving click events. -->
             <div class="filter-pills" id="time-filters-full">
                 <button class="pill active" data-filter="all-time">All Time</button>
                 <button class="pill" data-filter="this-month">This Month</button>
                 <button class="pill" data-filter="this-week">This Week</button>
                 <button class="pill" data-filter="today">Today</button>
             </div>
+            <div class="multiselect-wrapper" id="type-filter-wrapper-full">
+                <button type="button" class="multiselect-btn btn-type-filter">
+                    <span class="btn-text">All User Types</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="multiselect-dropdown dropdown-type-filter">
+                    <label class="multiselect-option">
+                        <input type="checkbox" value="0" checked>
+                        <span class="check-mark"></span>
+                        Interns
+                    </label>
+                    <label class="multiselect-option">
+                        <input type="checkbox" value="2" checked>
+                        <span class="check-mark"></span>
+                        Mentors
+                    </label>
+                    <label class="multiselect-option">
+                        <input type="checkbox" value="1" checked>
+                        <span class="check-mark"></span>
+                        Admins
+                    </label>
+                </div>
+            </div>
         </div>
         <div class="member-count">
-            <span id="total-members-count">1,247,832</span> Members Ranked
+            <span id="total-members-count">--</span> Members Ranked
         </div>
     </section>
 
     <!-- Data Table Section -->
+    <div class="rankings-card">
     <div class="table-responsive">
         <table class="rankings-table">
             <thead>
@@ -42,26 +64,20 @@
                 </tr>
             </thead>
             <tbody id="rankings-tbody">
-                
+                <!-- Data will be injected here by JS -->
             </tbody>
-            <!-- "Your Rank" Highlight Row -->
-            <tbody id="user-highlight-row">
-                
+            <!-- "Your Rank" Highlight Row Injection Point -->
+            <tbody id="user-highlight-container">
             </tbody>
         </table>
     </div>
 
     <!-- Pagination Controls -->
     <div class="pagination-wrapper">
-        <button class="page-btn" id="page-prev">&larr; Previous</button>
+        <button class="page-btn" id="page-prev" disabled><i class="fa-solid fa-chevron-left"></i> Previous</button>
         <div class="page-numbers" id="pagination-numbers">
-            <button class="page-num active">1</button>
-            <button class="page-num">2</button>
-            <button class="page-num">3</button>
-            <span class="dots">...</span>
-            <button class="page-num">847</button>
-            <button class="page-num">848</button>
         </div>
-        <button class="page-btn" id="page-next">Next &rarr;</button>
+        <button class="page-btn" id="page-next" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+    </div>
     </div>
 </div>

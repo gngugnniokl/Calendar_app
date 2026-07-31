@@ -27,51 +27,74 @@ switch ($action) {
 
     case 'top7':
         // Fetch top 7 for the podium and cards (Dev 3)
-        $top7 = Wo_GetLeaderboardData($conn, ['limit' => 7]);
+        $account_types = isset($_GET['account_types']) ? explode(',', (string)$_GET['account_types']) : [];
+        $top7 = Wo_GetLeaderboardData($conn, [
+            'limit' => 7,
+            'account_types' => $account_types
+        ]);
         
-        // Map points to tokens to align with UI terminology
+        // Assign sequential ranks 1-7 based on sorted position
+        $rankPos = 1;
         foreach ($top7 as &$user) {
-            $user['tokens'] = $user['points'];
-            // UI expects 'status' and 'trend' fields for some components
-            $user['status'] = ($user['rank'] === 1) ? 'KING' : (($user['rank'] <= 3) ? 'QUEEN' : 'MEMBER');
+            $user['rank'] = $rankPos;
+            $user['tokens'] = (int) $user['points'];
+            $user['status'] = ($rankPos === 1) ? 'KING' : (($rankPos <= 3) ? 'QUEEN' : 'MEMBER');
             $user['trend']  = 'neutral'; 
+
+            // Ensure avatar path is correct
+            if (!empty($user['avatar']) && strpos($user['avatar'], 'http') !== 0) {
+                $user['avatar'] = $wo['config']['site_url'] . '/' . $user['avatar'];
+            }
+            $rankPos++;
         }
 
         echo json_encode([
             'success' => true,
-            'data' => [
-                'podium' => array_slice($top7, 0, 3), // Top 3
-                'others' => array_slice($top7, 3)     // 4-7
-            ]
+            'data' => $top7 // Return flat array as expected by JS
         ]);
         exit();
 
     case 'rankings':
         // Paginated rankings for the table (Dev 4)
         $limit  = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
-        $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+        $page   = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $search = isset($_GET['search']) ? trim((string)$_GET['search']) : '';
+        $account_types = isset($_GET['account_types']) ? explode(',', (string)$_GET['account_types']) : [];
+        
+        $offset = ($page - 1) * $limit;
 
         $rankings = Wo_GetLeaderboardData($conn, [
             'limit'  => $limit,
             'offset' => $offset,
-            'search' => $search
+            'search' => $search,
+            'account_types' => $account_types
         ]);
+        
+        $total = Wo_GetLeaderboardTotalCount($conn, $search, $account_types);
 
         // Alignment: Map points to tokens and add UI-specific fields
+        $rankPos = $offset + 1;
         foreach ($rankings as &$user) {
-            $user['tokens'] = $user['points'];
-            $user['status'] = ($user['rank'] === 1) ? 'KING' : (($user['rank'] <= 3) ? 'QUEEN' : 'MEMBER');
+            $user['rank'] = $rankPos;
+            $user['tokens'] = (int) $user['points'];
+            $user['status'] = ($rankPos === 1) ? 'KING' : (($rankPos <= 3) ? 'QUEEN' : 'MEMBER');
             $user['trend']  = 'neutral';
+            // Ensure avatar path is correct
+            if (!empty($user['avatar']) && strpos($user['avatar'], 'http') !== 0) {
+                $user['avatar'] = $wo['config']['site_url'] . '/' . $user['avatar'];
+            }
+            $rankPos++;
         }
 
         echo json_encode([
             'success' => true,
             'data' => $rankings,
+            'total' => $total,
+            'totalPages' => ceil($total / $limit),
             'pagination' => [
                 'limit'  => $limit,
-                'offset' => $offset,
-                'has_more' => count($rankings) === $limit
+                'page'   => $page,
+                'has_more' => ($offset + count($rankings)) < $total
             ]
         ]);
         exit();
@@ -87,10 +110,9 @@ switch ($action) {
         echo json_encode([
             'success' => true,
             'data' => [
-                'tokens' => number_format((float)$data['points']),
-                'points' => (int)$data['points'],
-                'rank'   => $data['rank'],
-                'progress_percent' => round($progress, 1)
+                'tokens' => (int)$data['points'], // Send as number for JS to format
+                'rank'   => (int)$data['rank'],
+                'progress_pct' => round($progress, 1) // Match JS property name
             ]
         ]);
         exit();

@@ -317,6 +317,16 @@ switch ($action) {
             mysqli_stmt_execute($insStmt);
             mysqli_stmt_close($insStmt);
             $newStatus = 1;
+
+            // Award 500 tokens for completing the task
+            $tokenStmt = mysqli_prepare($conn, "INSERT INTO token_transactions (user_id, amount, reason, reference_type, reference_id) VALUES (?, ?, ?, ?, ?)");
+            $amount = 500;
+            $reason = "Task Completed";
+            $ref_type = "calendar_event";
+            $ref_id = (string)$data['id'];
+            mysqli_stmt_bind_param($tokenStmt, 'iisss', $user_id, $amount, $reason, $ref_type, $ref_id);
+            mysqli_stmt_execute($tokenStmt);
+            mysqli_stmt_close($tokenStmt);
         }
         
         respond(true, 'Completion updated', ['completed' => $newStatus]);
