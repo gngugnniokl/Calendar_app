@@ -54,6 +54,14 @@
                         
                         <div id="profileDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 15px; width: 340px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; overflow: hidden; text-align: left;">
                             <div style="padding: 20px; border-bottom: 1px solid var(--hairline);">
+                                <?php
+                                    // Fetch user's leaderboard stats for the profile dropdown
+                                    $lb_user_stats = Wo_GetUserRank($conn, (int)$wo['user']['user_id']);
+                                    $lb_tokens = number_format((int)($lb_user_stats['points'] ?? 0));
+                                    $lb_rank = (int)($lb_user_stats['rank'] ?? 0);
+                                    $lb_rank_display = $lb_rank > 0 ? '#' . number_format($lb_rank) : '--';
+                                    $lb_progress = min(100, round(((int)($lb_user_stats['points'] ?? 0) / 100000) * 100, 1));
+                                ?>
                                 <a href="?link1=timeline&u=<?php echo htmlspecialchars($wo['user']['username'] ?? ''); ?>" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
                                     <?php if ($nav_avatar !== 'upload/photos/d-avatar.jpg'): ?>
                                         <img src="<?php echo htmlspecialchars($nav_avatar); ?>" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--hairline);">
@@ -71,14 +79,23 @@
                                 <div style="display: flex; gap: 8px; margin-top: 20px;">
                                     <a href="?link1=leaderboard" style="flex: 1; text-decoration: none; color: inherit;">
                                         <div style="background: var(--bg); border: 1px solid var(--hairline); border-radius: 20px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;">
-                                            <i class="fa-solid fa-coins" style="color: var(--gold);"></i> <span id="lb-user-tokens">--</span>
+                                            <i class="fa-solid fa-coins" style="color: var(--gold);"></i> <span id="lb-user-tokens"><?php echo $lb_tokens; ?></span>
                                         </div>
                                     </a>
                                     <a href="?link1=leaderboard" style="flex: 1; text-decoration: none; color: inherit;">
                                         <div style="background: var(--bg); border: 1px solid var(--hairline); border-radius: 20px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;">
-                                            <i class="fa-solid fa-chart-simple" style="color: var(--gold);"></i> <span id="lb-user-rank">--</span>
+                                            <i class="fa-solid fa-chart-simple" style="color: var(--gold);"></i> <span id="lb-user-rank"><?php echo $lb_rank_display; ?></span>
                                         </div>
                                     </a>
+                                </div>
+
+                                <div style="margin-top: 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">
+                                        <span>King Goal</span>
+                                    </div>
+                                    <div style="height: 6px; background: var(--bg); border: 1px solid var(--hairline); border-radius: 3px; overflow: hidden;">
+                                        <div id="lb-progress-bar" style="width: <?php echo $lb_progress; ?>%; height: 100%; background: linear-gradient(90deg, var(--gold), #f7c948); border-radius: 3px; transition: width 0.4s ease;"></div>
+                                    </div>
                                 </div>
                             </div>
                             

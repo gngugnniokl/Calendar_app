@@ -1101,22 +1101,34 @@ function Wo_GetLeaderboardData(mysqli $conn, array $options = []): array {
     $limit = isset($options['limit']) ? (int)$options['limit'] : 10;
     $offset = isset($options['offset']) ? (int)$options['offset'] : 0;
     $search = isset($options['search']) ? trim((string)$options['search']) : '';
+    $account_types = isset($options['account_types']) ? (array)$options['account_types'] : [];
     
-    // Base query using points from Wo_Users directly (assuming Dev 1 added points column
-    // or we use a subquery if tables are still being set up).
-    // For now, we simulate points using user_id + joined to have variation.
-    $sql = "SELECT user_id, username, CONCAT(first_name, ' ', last_name) as name, avatar, 
-            (user_id * 10 + joined % 1000) as points 
-            FROM Wo_Users 
-            WHERE active = '1'";
+    // Base query using real tokens from leaderboard_tokens table
+    $sql = "SELECT u.user_id, u.username, CONCAT(u.first_name, ' ', u.last_name) as name, u.avatar, 
+            COALESCE(lt.total_tokens, 0) as points, lt.current_rank as `rank`, lt.rank_tier, lt.is_king_or_queen,
+            u.joined, u.admin
+            FROM Wo_Users u
+            LEFT JOIN leaderboard_tokens lt ON u.user_id = lt.user_id
+            WHERE u.active = '1'";
             
     if ($search !== '') {
-        $sql .= " AND (username LIKE ? OR first_name LIKE ? OR last_name LIKE ?)";
+        $sql .= " AND (u.username LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)";
+    }
+
+    if (!empty($account_types)) {
+        // Sanitize and escape admin levels
+        $escaped_types = array_map(fn($t) => "'" . mysqli_real_escape_string($conn, (string)$t) . "'", $account_types);
+        $sql .= " AND u.admin IN (" . implode(',', $escaped_types) . ")";
     }
     
-    $sql .= " ORDER BY points DESC LIMIT ? OFFSET ?";
+    // Sort by points DESC and limit for pagination
+    $sql .= " ORDER BY points DESC, u.user_id ASC LIMIT ? OFFSET ?";
     
     $stmt = mysqli_prepare($conn, $sql);
+    
+    if (!$stmt) {
+        return [];
+    }
     
     if ($search !== '') {
         $search_param = "%$search%";
@@ -1128,11 +1140,19 @@ function Wo_GetLeaderboardData(mysqli $conn, array $options = []): array {
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
     $data = [];
-    $rank = $offset + 1;
+    
+    // Initial rank based on offset if current_rank is not set or not properly calculated
+    $rank_counter = $offset + 1;
+    
     if ($res) {
         while ($row = mysqli_fetch_assoc($res)) {
-            $row['rank'] = $rank++;
-            if (trim($row['name']) === '') $row['name'] = $row['username'];
+            // Use current_rank from DB if available, else fall back to calculation
+            if (empty($row['rank']) || (int)$row['rank'] <= 0) {
+                $row['rank'] = $rank_counter++;
+            } else {
+                $row['rank'] = (int) $row['rank'];
+            }
+            if (trim((string)$row['name']) === '') $row['name'] = $row['username'];
             $data[] = $row;
         }
     }
@@ -1141,21 +1161,75 @@ function Wo_GetLeaderboardData(mysqli $conn, array $options = []): array {
 }
 
 /**
+ * Wo_GetLeaderboardTotalCount() — Fetch total number of members in the leaderboard.
+ */
+function Wo_GetLeaderboardTotalCount(mysqli $conn, string $search = '', array $account_types = []): int {
+    $sql = "SELECT COUNT(*) as total FROM Wo_Users WHERE active = '1'";
+    if ($search !== '') {
+        $sql .= " AND (username LIKE ? OR first_name LIKE ? OR last_name LIKE ?)";
+    }
+
+    if (!empty($account_types)) {
+        $escaped_types = array_map(fn($t) => "'" . mysqli_real_escape_string($conn, (string)$t) . "'", $account_types);
+        $sql .= " AND admin IN (" . implode(',', $escaped_types) . ")";
+    }
+    
+    $stmt = mysqli_prepare($conn, $sql);
+    if (!$stmt) return 0;
+    
+    if ($search !== '') {
+        $search_param = "%$search%";
+        mysqli_stmt_bind_param($stmt, 'sss', $search_param, $search_param, $search_param);
+    }
+    
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($res);
+    mysqli_stmt_close($stmt);
+    
+    return (int)($row['total'] ?? 0);
+}
+
+/**
  * Wo_GetUserRank() — Fetch specific user's rank and points.
  */
 function Wo_GetUserRank(mysqli $conn, int $user_id): array {
-    // Subquery to find rank based on points logic
-    $sql = "SELECT user_id, points, rank FROM (
-                SELECT user_id, (user_id * 10 + joined % 1000) as points, 
-                RANK() OVER (ORDER BY (user_id * 10 + joined % 1000) DESC) as rank
-                FROM Wo_Users WHERE active = '1'
-            ) as rankings WHERE user_id = ?";
+    // Attempt to fetch from leaderboard_tokens table first for optimized rank
+    $sql = "SELECT lt.user_id, lt.total_tokens as points, lt.current_rank as rank, lt.rank_tier, lt.is_king_or_queen 
+            FROM leaderboard_tokens lt 
+            WHERE lt.user_id = ?";
             
     $stmt = mysqli_prepare($conn, $sql);
+    if (!$stmt) {
+        return ['user_id' => $user_id, 'points' => 0, 'rank' => 0, 'rank_tier' => 'rookie', 'is_king_or_queen' => 0];
+    }
     mysqli_stmt_bind_param($stmt, 'i', $user_id);
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
-    $data = mysqli_fetch_assoc($res) ?: ['user_id' => $user_id, 'points' => 0, 'rank' => '--'];
+    $data = mysqli_fetch_assoc($res);
+    mysqli_stmt_close($stmt);
+    
+    if ($data) {
+        return $data;
+    }
+    
+    // Fallback if the user isn't in leaderboard_tokens yet (calculate on the fly)
+    $sql = "SELECT user_id, points, rank FROM (
+                SELECT u.user_id, COALESCE(lt.total_tokens, 0) as points, 
+                RANK() OVER (ORDER BY COALESCE(lt.total_tokens, 0) DESC, u.user_id ASC) as rank
+                FROM Wo_Users u
+                LEFT JOIN leaderboard_tokens lt ON u.user_id = lt.user_id
+                WHERE u.active = '1'
+            ) as rankings WHERE user_id = ?";
+            
+    $stmt = mysqli_prepare($conn, $sql);
+    if (!$stmt) {
+        return ['user_id' => $user_id, 'points' => 0, 'rank' => 0, 'rank_tier' => 'rookie', 'is_king_or_queen' => 0];
+    }
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $data = mysqli_fetch_assoc($res) ?: ['user_id' => $user_id, 'points' => 0, 'rank' => 0, 'rank_tier' => 'rookie', 'is_king_or_queen' => 0];
     mysqli_stmt_close($stmt);
     return $data;
 }
